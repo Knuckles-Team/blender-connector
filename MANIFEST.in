@@ -1,0 +1,16 @@
+include LICENSE
+include README.md
+include requirements.txt
+# Scanner policies are included in source distributions so a checkout
+# recreated from the sdist has the same reviewed quality surface. They
+# remain source-checkout tooling, not runtime wheel/package data; hooks
+# never install native tools and the Docker runtime excludes scripts/.
+include .pre-commit-config.yaml
+graft .github/workflows
+graft scripts
+graft tests
+graft docs
+graft specs
+include mkdocs.yml pytest.ini .bumpversion.cfg
+global-exclude __pycache__ *.py[cod]
+recursive-include blender_connector *.py *.json *.md *.yaml *.yml *.ttl

@@ -1,0 +1,118 @@
+# The authored Blender source for the content tier
+# (CONN-BLENDER-CONNECTOR-CONTENT). The functionality set partitions the
+# full served tool surface: every tool in the committed snapshot belongs
+# to at least one functionality, and the generator refuses a render that
+# names a tool the snapshot does not list.
+#
+# The snapshot is taken with a plain MCP client (no app extensions),
+# which is what the connector's proxy and OpenCode negotiate. The
+# upstream's app-extension-only tools (the viewport app surface and
+# mention search) are not part of that surface and are not listed here;
+# a future client with app support is a snapshot-refresh plus
+# functionality extension, gated by the drift checks.
+
+app: blender
+summary: >
+  Blender 3D scene work through the mcp-for-blender upstream — inspect the
+  scene, build geometry, author materials, place cameras and lights, rig and
+  animate, review the viewport, import assets, and generate 3D content.
+
+classes:
+  - name: BlenderFile
+    parent: Document
+    description: "A .blend scene file."
+  - name: Scene
+    parent: Document
+    description: "A Blender scene: objects, cameras, lights and world."
+  - name: Object
+    parent: Artifact
+    description: "A 3D object in the scene."
+  - name: Material
+    parent: Artifact
+    description: "A surface material with its node graph."
+  - name: Camera
+    parent: Artifact
+    description: "A scene camera and its view."
+  - name: Light
+    parent: Artifact
+    description: "A scene light."
+  - name: Rig
+    parent: Artifact
+    description: "An armature or bone hierarchy."
+  - name: Render
+    parent: CreativeWork
+    description: "A rendered image or animation produced by Blender."
+
+functionality:
+  - name: inspect_scene
+    description: "Report the addon status, the connection state and the scene's objects and materials."
+    tools:
+      - get_addon_status
+      - get_scene_info
+    steps:
+      - Check the addon status.
+      - Read the scene inventory.
+  - name: build_scene
+    description: "Add, move and shape objects with Python executed inside Blender."
+    tools:
+      - execute_blender_code
+    steps:
+      - Plan the geometry change in bpy terms.
+      - Execute it in one bounded code block.
+      - Verify the result with the scene inventory or a look.
+  - name: materials
+    description: "Author materials, textures and node graphs for objects."
+    tools:
+      - execute_blender_code
+    steps:
+      - Create the material and assign it to the target object.
+      - Build the node graph.
+      - Verify with a viewport look.
+  - name: camera_lighting
+    description: "Place cameras and lights and set the world environment."
+    tools:
+      - execute_blender_code
+    steps:
+      - Add or adjust the camera and lights.
+      - Set exposure and world settings.
+      - Verify the framing with a viewport look.
+  - name: rig_animate
+    description: "Rig objects with armatures and animate actions and keyframes."
+    tools:
+      - execute_blender_code
+    steps:
+      - Build the armature and parent the mesh.
+      - Pose and keyframe the action.
+      - Verify the motion with a viewport look.
+  - name: review_viewport
+    description: "Review the scene with viewport screenshots."
+    tools:
+      - look
+    steps:
+      - Capture the viewport for the result.
+      - Inspect the image and iterate on the scene.
+  - name: assets
+    description: "Search and import library assets into the scene."
+    tools:
+      - search_assets
+      - import_asset
+    steps:
+      - Search the asset library.
+      - Import the chosen asset into the scene.
+  - name: generative_3d
+    description: "Generate 3D content from text or images; these operations may cost credits."
+    tools:
+      - generate_3d
+      - generate_gaussian_world
+    steps:
+      - Describe the target model or world.
+      - Run the generation and wait for progress.
+      - Inspect the result and integrate it into the scene.
+  - name: session_controls
+    description: "Session maintenance: telemetry opt-out and trajectory feedback."
+    tools:
+      - disable_telemetry
+      - record_trajectory_feedback
+    steps:
+      - Disable telemetry for the session when required.
+      - Record trajectory feedback as the workflow needs.

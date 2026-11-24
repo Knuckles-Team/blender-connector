@@ -1,0 +1,20 @@
+# CONN-BLENDER-CONNECTOR — Test specification
+
+Governing spec: [spec.md](spec.md).
+
+| Test ID | Requirement | Proving test | Expected observation |
+|---|---|---|---|
+| T-001 | `CONN-BLENDER-CONNECTOR-R001` | `tests/test_upstream_declarations.py::test_single_stdio_declaration` | One declaration exists with the pinned shape: stdio, command `blender-mcp`, an explicit empty sandbox grant, `activation` `active` and `on_drift` `warn`. |
+| T-001.1 | `CONN-BLENDER-CONNECTOR-R001` | `tests/test_upstream_declarations.py::test_inherit_env_default_carries_telemetry_and_socket` | The shipped environment whitelist names exactly `PATH`, `HOME`, `LANG`, `DISABLE_TELEMETRY`, `BLENDER_HOST` and `BLENDER_PORT`. |
+| T-002 | `CONN-BLENDER-CONNECTOR-R002` | `tests/test_tool_budget.py::test_initial_list_is_full_surface` | The first list holds exactly eight tools against the three-tool fixture: four registry tools, `handshake` and the three `blender_*` tools. `registry_status` reports `ready` with the fixture tool count. |
+| T-003 | `CONN-BLENDER-CONNECTOR-R003` | `tests/test_probe.py::test_probe_reports_the_fixture_upstream` | A fixture upstream reports `exposes_mcp` true with its version and tool count. |
+| T-003.1 | `CONN-BLENDER-CONNECTOR-R003` | `tests/test_probe.py::test_probe_reports_a_missing_binary` | With an empty `PATH`, the probe reports `exposes_mcp` false and `BLENDER_MCP_NOT_FOUND`. |
+| T-003.2 | `CONN-BLENDER-CONNECTOR-R003` | `tests/test_probe.py::test_probe_reports_a_dead_upstream` | A fixture that dies before the handshake reports `exposes_mcp` false and `BLENDER_MCP_NO_MCP`. |
+| T-004 | `CONN-BLENDER-CONNECTOR-R004` | `tests/test_local_mode.py::test_missing_binary_marks_upstream_unavailable` | With the command absent from `PATH`, `registry_status` shows `unavailable` with `UPSTREAM_SPAWN_FAILED`, no `blender_*` tool is listed, `handshake` answers with `command_found` false, and the content keeps serving. |
+| T-005 | `CONN-BLENDER-CONNECTOR-R005` | `tests/test_remote_overlay.py::test_example_overlay_switches_to_http` | The example overlay validates; after the merge the declaration is `http` with the pinned url, the credential reference and the TLS profile, under the inherited namespace. |
+| T-005.1 | `CONN-BLENDER-CONNECTOR-R005` | `tests/test_remote_overlay.py::test_literal_credential_refuses_the_overlay` | A literal credential in the overlay refuses the merge with `UPSTREAM_DECL_INVALID`. |
+| T-006 | `CONN-BLENDER-CONNECTOR-R006` | `tests/test_phase1_gate.py::test_phase1_gate` (handshake call) and `tests/test_local_mode.py::test_missing_binary_marks_upstream_unavailable` (handshake call) | `handshake` reports `command_found` true with the fixture on `PATH` and false with an empty `PATH`. |
+| T-007 | `CONN-BLENDER-CONNECTOR-R007` | `tests/test_drift.py::test_drifted_upstream_reports_drifted` | The fixture upstream against a fingerprint it cannot match lists, and `registry_status` shows `drifted` while the connector surface stays up. |
+| T-008 | `CONN-BLENDER-CONNECTOR-R008` | SDK conformance suite (`connector_conformance::startup`, `::content_surfaces`, `::prompts_served`) inside the repository test suite | The conformance suite passes with the connector identity registered once. |
+| T-009 | `CONN-BLENDER-CONNECTOR-R009` | `tests/test_phase1_gate.py::test_phase1_gate` | The full namespaced surface is listed; a read and a write pass through the proxy unaltered; `handshake` answers locally; `registry_status` reports `ready`. |
+| T-010 | `CONN-BLENDER-CONNECTOR-R010` | `tests/test_content_drift.py::test_committed_content_matches_snapshot` plus the CI gate in `.github/workflows/connector.yml` | The offline drift gate is green. The live gate is an operator step run on a host with the binary; a host without it records the gap. |

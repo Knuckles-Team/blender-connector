@@ -1,0 +1,15 @@
+site_name: blender-connector
+site_description: The Blender connector of the Arbora ecosystem; proxies the mcp-for-blender upstream and serves the packaged Blender skills, prompts and ontology.
+nav:
+  - Home: index.md
+  - Overview: overview.md
+  - Architecture: architecture.md
+  - Installation: installation.md
+  - Usage: usage.md
+  - Deployment: deployment.md
+  - Glossary: glossary.md
+  - Spec delivery: spec-delivery.md
+markdown_extensions:
+  - tables
+  - admonition
+  - toc

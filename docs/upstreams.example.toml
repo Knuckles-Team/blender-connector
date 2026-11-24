@@ -1,0 +1,20 @@
+# Operator overlay: reach the Blender upstream over streamable HTTP
+# (CONN-BLENDER-CONNECTOR-R005).
+#
+# Name this file in the setting SCION_UPSTREAMS_FILE. The entry switches
+# the declared stdio upstream to kind "http": the url is the https
+# endpoint of a remote host serving the upstream's MCP surface, the
+# credential holds a secret reference (never a value), and the TLS
+# profile is a name from the operator's catalog. The values below are
+# placeholders from an unresolvable domain; replace them before use.
+#
+# The default deployment stays stdio: the connector starts the local
+# blender-mcp binary as a pooled child. This overlay is for the day a
+# remote host serves the surface over HTTP.
+
+[[upstream]]
+name = "blender"
+kind = "http"
+url = "https://blender.example.invalid/mcp"
+credential = "env://BLENDER_CONNECTOR_TOKEN"
+tls_profile = "default"

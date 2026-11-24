@@ -1,0 +1,49 @@
+{
+  "schema_version": "capabilities/v1",
+  "capability": "mcp",
+  "transports": ["stdio"],
+  "server": "blender-connector",
+  "tools": [
+    {"name": "handshake", "native": true, "read_only": true},
+    {"name": "registry_list_namespaces", "native": true, "read_only": true},
+    {"name": "registry_activate", "native": true, "read_only": false},
+    {"name": "registry_deactivate", "native": true, "read_only": false},
+    {"name": "registry_status", "native": true, "read_only": true}
+  ],
+  "upstreams": [
+    {
+      "name": "blender",
+      "kind": "stdio",
+      "command": "blender-mcp",
+      "activation": "active",
+      "on_drift": "warn",
+      "tools": [
+        "blender_disable_telemetry",
+        "blender_execute_blender_code",
+        "blender_generate_3d",
+        "blender_generate_gaussian_world",
+        "blender_get_addon_status",
+        "blender_get_scene_info",
+        "blender_import_asset",
+        "blender_look",
+        "blender_record_trajectory_feedback",
+        "blender_search_assets"
+      ]
+    }
+  ],
+  "resources": [
+    "skill://blender/SKILL.md",
+    "ontology://blender-connector/blender.ttl"
+  ],
+  "prompts": [
+    "blender-assets",
+    "blender-build_scene",
+    "blender-camera_lighting",
+    "blender-generative_3d",
+    "blender-inspect_scene",
+    "blender-materials",
+    "blender-review_viewport",
+    "blender-rig_animate",
+    "blender-session_controls"
+  ]
+}

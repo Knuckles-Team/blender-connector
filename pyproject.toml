@@ -1,0 +1,70 @@
+[build-system]
+requires = [ "setuptools>=84.0.0", "wheel",]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "blender-connector"
+version = "0.1.0"
+description = "Blender connector and MCP server; proxies the mcp-for-blender upstream and serves the packaged Blender skills, prompts and ontology"
+readme = "README.md"
+classifiers = [ "Development Status :: 4 - Beta", "License :: OSI Approved :: MIT License", "Environment :: Console", "Operating System :: POSIX :: Linux", "Programming Language :: Python :: 3",]
+requires-python = ">=3.12, <3.15"
+dependencies = [ "pyyaml>=6.0.2,<7", "scion-sdk[mcp]>=0.7.1,<0.8",]
+[[project.authors]]
+name = "Repository Maintainers"
+email = "maintainers@knuckles.team"
+
+[project.license]
+text = "MIT"
+
+[project.optional-dependencies]
+mcp = [ "scion-sdk[mcp]>=0.7.1,<0.8",]
+all = [ "scion-sdk[mcp]>=0.7.1,<0.8",]
+test = [
+  "pytest-xdist>=3.8.0", "pytest", "pytest-asyncio", "pytest-cov",
+  "rdflib>=7.0.0,<8",]
+
+[project.scripts]
+blender-connector = "blender_connector.mcp_server:mcp_server"
+blender-connector-probe = "blender_connector.probe:main"
+
+# Fleet contribution: advertise this package's prompts so scion-sdk
+# discovers and federates them without importing the agent code.
+[project.entry-points."scion_sdk.prompt_providers"]
+blender-connector = "blender_connector.prompts"
+
+# The one declared connector identity: the fleet name.
+[project.entry-points."scion_sdk.connector"]
+blender-connector = "blender_connector:connector"
+
+[tool.uv.workspace]
+members = ["."]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+check_untyped_defs = true
+
+[dependency-groups]
+dev = [
+  "medulla>=3.0.0,<4",
+  "pytest-timeout>=2.4.0",
+]
+
+[tool.setuptools.package-data]
+blender_connector = [ "mcp_config.json", "prompts/**", "skills/**", "ontology/**", ]
+
+[tool.ruff.lint]
+select = [ "E", "F", "I", "UP", "B",]
+ignore = [ "E402", "E501", "B008",]
+
+[tool.setuptools.packages.find]
+where = [ ".",]
+include = ["blender_connector*"]

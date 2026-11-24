@@ -1,0 +1,64 @@
+default_language_version:
+  python: python3
+default_install_hook_types: [pre-commit, pre-push]
+default_stages: [pre-commit]
+
+repos:
+- repo: https://github.com/Knuckles-Team/pipelines
+  rev: main
+  hooks:
+  # Native scanner versions and policy follow the approved shared main source.
+  # Use the reviewed, already-provisioned toolchain; hooks never install it.
+  - id: scanner-versions
+    stages: [pre-push]
+  - id: complexity-staged
+  - id: kiss-staged
+  - id: dupehound-changed
+  - id: complexity-census
+    stages: [pre-push]
+  - id: kiss-census
+    stages: [pre-push]
+  - id: public-surface
+  - id: security-sanitizer
+  - id: secret-history
+  - id: supply-chain
+  - id: import-cycles
+  - id: env-sprawl
+  - id: stdout-writes
+  - id: swallowed-errors
+  - id: event-loop-blocking
+  - id: no-stub
+  - id: spec-decomposition
+  - id: spec-standard
+  - id: spec-status
+  # Inherit the upstream manual stage; ordinary code checks do not call it.
+  - id: dependency-readiness
+
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0
+  hooks:
+  - id: check-ast
+  - id: check-yaml
+    args: [--unsafe]
+  - id: check-toml
+  - id: check-json
+  - id: check-merge-conflict
+  - id: detect-private-key
+  - id: trailing-whitespace
+  - id: end-of-file-fixer
+
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: 38bfb07c0c64c304f47eb52090f8288150c77730 # v0.17.1
+  hooks:
+  - id: ruff-check
+  - id: ruff-format
+
+- repo: local
+  hooks:
+  - id: pytest
+    name: Generated connector contracts
+    entry: python -m pytest tests -q
+    language: system
+    pass_filenames: false
+    always_run: true
+    stages: [pre-push]

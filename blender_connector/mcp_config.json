@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "blender": {
+      "command": "uv",
+      "args": [
+        "run",
+        "blender-connector"
+      ],
+      "env": {
+        "DISABLE_TELEMETRY": "1",
+        "SCION_UPSTREAMS_INHERIT_ENV": "PATH,HOME,LANG,DISABLE_TELEMETRY,BLENDER_HOST,BLENDER_PORT"
+      }
+    }
+  }
+}
