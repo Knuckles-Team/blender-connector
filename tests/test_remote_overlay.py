@@ -36,9 +36,7 @@ def test_example_overlay_switches_to_http() -> None:
 
 
 def test_literal_credential_refuses_the_overlay(overlay_writer) -> None:
-    text = (REPO_ROOT / "docs" / "upstreams.example.toml").read_text(
-        encoding="utf-8"
-    )
+    text = (REPO_ROOT / "docs" / "upstreams.example.toml").read_text(encoding="utf-8")
     path = overlay_writer(
         text.replace("env://BLENDER_CONNECTOR_TOKEN", "literal-token")
     )

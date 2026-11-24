@@ -28,9 +28,7 @@ def test_committed_content_matches_snapshot() -> None:
         capture_output=True,
         text=True,
     )
-    assert result.returncode == 0, (
-        f"content drift: {result.stdout}\n{result.stderr}"
-    )
+    assert result.returncode == 0, f"content drift: {result.stdout}\n{result.stderr}"
 
 
 def test_functionality_partition_covers_the_snapshot() -> None:
@@ -41,9 +39,7 @@ def test_functionality_partition_covers_the_snapshot() -> None:
     )
 
     source = load_app_source(REPO_ROOT / "content" / "apps" / "blender.yml")
-    snapshot = load_snapshot(
-        REPO_ROOT / "content" / "snapshots" / "blender.tools.json"
-    )
+    snapshot = load_snapshot(REPO_ROOT / "content" / "snapshots" / "blender.tools.json")
     assert unassigned_tools(source, snapshot) == []
 
 

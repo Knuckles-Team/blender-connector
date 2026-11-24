@@ -43,7 +43,9 @@ def _declare_pinned(monkeypatch) -> None:
     )
 
 
-def test_drifted_upstream_reports_drifted(blender_cli_factory, clean_upstream_env, monkeypatch) -> None:
+def test_drifted_upstream_reports_drifted(
+    blender_cli_factory, clean_upstream_env, monkeypatch
+) -> None:
     blender_cli_factory()
     _declare_pinned(monkeypatch)
     server = build_server(command_args=[])

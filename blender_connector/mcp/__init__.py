@@ -8,14 +8,11 @@ itself: every Blender interaction stays in the upstream.
 
 from __future__ import annotations
 
-import os
 import shutil
 import socket
 from typing import Any
 
-#: The default Blender addon socket address, as the upstream resolves it.
-DEFAULT_HOST = "localhost"
-DEFAULT_PORT = 9876
+from blender_connector.upstreams import BLENDER_COMMAND, blender_host, blender_port
 
 #: The bounded probe window for the socket check.
 PROBE_TIMEOUT_S = 2.0
@@ -55,16 +52,12 @@ def register_blender_tools(mcp: Any) -> None:
         addon enabled, or the host and port do not match the running
         instance.
         """
-        host = os.environ.get("BLENDER_HOST", DEFAULT_HOST)
-        raw_port = os.environ.get("BLENDER_PORT", "")
-        try:
-            port = int(raw_port) if raw_port else DEFAULT_PORT
-        except ValueError:
-            port = DEFAULT_PORT
+        host = blender_host()
+        port = blender_port()
         socket_state = _socket_state(host, port)
         return {
-            "upstream_command": "blender-mcp",
-            "command_found": shutil.which("blender-mcp") is not None,
+            "upstream_command": BLENDER_COMMAND,
+            "command_found": shutil.which(BLENDER_COMMAND) is not None,
             "host": host,
             "port": port,
             "addon_socket": socket_state,

@@ -23,7 +23,9 @@ def test_probe_reports_the_fixture_upstream(blender_cli_factory) -> None:
     assert result["tool_count"] == 3
 
 
-def test_probe_reports_a_missing_binary(clean_upstream_env, monkeypatch, tmp_path) -> None:
+def test_probe_reports_a_missing_binary(
+    clean_upstream_env, monkeypatch, tmp_path
+) -> None:
     monkeypatch.setenv("PATH", str(tmp_path))
     result = asyncio.run(probe_upstream(20.0))
     assert result["exposes_mcp"] is False

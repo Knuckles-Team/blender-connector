@@ -23,7 +23,6 @@ import asyncio
 import json
 import os
 import sys
-from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -31,7 +30,6 @@ from scion_sdk.manifest.tool_schema import compatibility_fingerprint
 
 from blender_connector.content_gen.errors import (
     CONTENT_SNAPSHOT_MISSING,
-    CONTENT_SNAPSHOT_STALE,
     ContentError,
 )
 from blender_connector.content_gen.ontology import render_ontology
@@ -69,17 +67,20 @@ def _committed_paths(source: BlenderSource, snapshot: ToolSnapshot) -> dict[str,
     files["skills/blender/SKILL.md"] = render_skill(source, snapshot)
     files["ontology/blender.ttl"] = render_ontology(source, snapshot)
     files.update(
-        {f"prompts/{name}": text for name, text in render_prompts(source, snapshot).items()}
+        {
+            f"prompts/{name}": text
+            for name, text in render_prompts(source, snapshot).items()
+        }
     )
     return files
 
 
 def refresh_snapshot(timeout_s: float) -> ToolSnapshot:
     """Start the upstream, read its tool list, and build the snapshot."""
+    import shutil
+
     from fastmcp import Client
     from fastmcp.client.transports import StdioTransport
-
-    import shutil
 
     from blender_connector.upstreams import BLENDER_COMMAND
 
@@ -225,9 +226,7 @@ def main(argv: list[str] | None = None) -> int:
             committed[tool.name].name, committed[tool.name].input_schema
         )
     ]
-    missing = [
-        tool.name for tool in fresh.tools if tool.name not in committed
-    ]
+    missing = [tool.name for tool in fresh.tools if tool.name not in committed]
     if fresh.version != snapshot.version:
         print(
             f"note: upstream version {fresh.version} differs from snapshot "

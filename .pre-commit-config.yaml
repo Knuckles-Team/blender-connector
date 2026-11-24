@@ -55,6 +55,12 @@ repos:
 
 - repo: local
   hooks:
+  - id: content-drift
+    name: Generated content matches the committed snapshot
+    entry: python scripts/generate_blender_content.py --check
+    language: system
+    pass_filenames: false
+    always_run: true
   - id: pytest
     name: Generated connector contracts
     entry: python -m pytest tests -q

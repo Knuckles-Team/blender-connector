@@ -21,7 +21,10 @@ from fastmcp import FastMCP
 
 def main() -> int:
     if os.environ.get("BLENDER_FIXTURE_DIE") == "1":
-        print("blender-mcp: fixture dies before the handshake", file=__import__("sys").stderr)
+        print(
+            "blender-mcp: fixture dies before the handshake",
+            file=__import__("sys").stderr,
+        )
         return 1
 
     mcp = FastMCP(

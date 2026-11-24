@@ -59,8 +59,7 @@ def test_missing_binary_marks_upstream_unavailable(
             # No proxied tools, but the server surface stays up.
             assert "handshake" in tools
             assert not any(
-                name.startswith("blender_") and name != "handshake"
-                for name in tools
+                name.startswith("blender_") and name != "handshake" for name in tools
             )
             # The registry reports the spawn failure with its refusal code.
             status = {
