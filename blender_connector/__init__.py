@@ -26,7 +26,9 @@ async def _upstream_readiness() -> Readiness:
     return Readiness(
         ready=True,
         detail={
-            "upstream_command": "found" if shutil.which(BLENDER_COMMAND) else "not_found"
+            "upstream_command": "found"
+            if shutil.which(BLENDER_COMMAND)
+            else "not_found"
         },
     )
 

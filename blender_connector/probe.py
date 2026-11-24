@@ -3,10 +3,11 @@
 The operator or a host job runs it after each upstream update. It starts
 the declared command exactly as the registry would (telemetry off),
 performs the MCP handshake and a ``tools/list``, and prints one JSON
-result. It writes no file, and exits non-zero when the upstream no
-longer answers: a missing binary reports ``BLENDER_MCP_NOT_FOUND``, a
-binary that does not complete the handshake reports
-``BLENDER_MCP_NO_MCP``.
+result to stderr: stdout stays clean for the stdio transport, and the
+exit code is the machine signal. It writes no file, and exits non-zero
+when the upstream no longer answers: a missing binary reports
+``BLENDER_MCP_NOT_FOUND``, a binary that does not complete the handshake
+reports ``BLENDER_MCP_NO_MCP``.
 """
 
 from __future__ import annotations
@@ -73,7 +74,7 @@ async def probe_upstream(timeout_s: float) -> dict[str, Any]:
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    """The console entry point; one JSON result on stdout."""
+    """The console entry point; one JSON result on stderr, exit code the signal."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--timeout",
@@ -89,7 +90,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         return 2
     result = asyncio.run(probe_upstream(args.timeout))
-    print(json.dumps(result, indent=2))
+    print(json.dumps(result, indent=2), file=sys.stderr)
     return 0 if result["exposes_mcp"] else 1
 
 

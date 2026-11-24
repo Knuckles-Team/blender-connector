@@ -27,7 +27,9 @@ def test_default_content_surfaces(clean_upstream_env, monkeypatch) -> None:
 
     async def listings():
         async with Client(build_server(command_args=[])) as client:
-            resources = {str(resource.uri) for resource in await client.list_resources()}
+            resources = {
+                str(resource.uri) for resource in await client.list_resources()
+            }
             prompts = {prompt.name for prompt in await client.list_prompts()}
         return resources, prompts
 
@@ -35,9 +37,7 @@ def test_default_content_surfaces(clean_upstream_env, monkeypatch) -> None:
     if list(ROOT.glob("skills/*/SKILL.md")):
         assert any(uri.startswith("skill://") for uri in resources)
     if list(ROOT.glob("ontology/*.ttl")):
-        assert any(
-            uri.startswith("ontology://blender-connector/") for uri in resources
-        )
+        assert any(uri.startswith("ontology://blender-connector/") for uri in resources)
     for path in ROOT.glob("prompts/*.json"):
         if not path.name.startswith("_"):
             assert path.stem in prompts

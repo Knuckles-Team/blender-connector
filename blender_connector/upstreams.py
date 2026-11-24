@@ -14,14 +14,22 @@ sets the values on the connector process (see ``docs/usage.md``).
 
 from __future__ import annotations
 
+import os
+
 from scion_sdk.mcp.upstreams import SandboxRoots, UpstreamDecl
 
 __all__ = [
     "BLENDER_COMMAND",
+    "BLENDER_HOST_ENV",
+    "BLENDER_PORT_ENV",
+    "DEFAULT_BLENDER_HOST",
+    "DEFAULT_BLENDER_PORT",
     "INHERIT_ENV_DEFAULT",
     "INHERIT_ENV_SETTING",
     "UPSTREAM_NAME",
     "UPSTREAMS",
+    "blender_host",
+    "blender_port",
     "build_upstreams",
 ]
 
@@ -37,6 +45,32 @@ INHERIT_ENV_SETTING = "SCION_UPSTREAMS_INHERIT_ENV"
 #: The starting whitelist: the SDK basics plus the telemetry opt-out and
 #: the Blender socket address the upstream resolves from the environment.
 INHERIT_ENV_DEFAULT = "PATH,HOME,LANG,DISABLE_TELEMETRY,BLENDER_HOST,BLENDER_PORT"
+
+#: The addon socket address the upstream resolves from the operator
+#: environment. This module is the package's declared configuration
+#: module: the environment reads live here and only here (env-sprawl).
+BLENDER_HOST_ENV = "BLENDER_HOST"
+BLENDER_PORT_ENV = "BLENDER_PORT"
+DEFAULT_BLENDER_HOST = "localhost"
+DEFAULT_BLENDER_PORT = 9876
+
+
+def blender_host() -> str:
+    """The addon socket host set on this process (default ``localhost``)."""
+    return os.environ.get(BLENDER_HOST_ENV, DEFAULT_BLENDER_HOST)
+
+
+def blender_port() -> int:
+    """The addon socket port set on this process (default ``9876``).
+
+    A value that is not a port number falls back to the default, the
+    same way the upstream's own socket probe does.
+    """
+    raw = os.environ.get(BLENDER_PORT_ENV, "")
+    try:
+        return int(raw) if raw else DEFAULT_BLENDER_PORT
+    except ValueError:
+        return DEFAULT_BLENDER_PORT
 
 
 def build_upstreams() -> tuple[UpstreamDecl, ...]:

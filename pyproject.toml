@@ -28,6 +28,21 @@ test = [
 blender-connector = "blender_connector.mcp_server:mcp_server"
 blender-connector-probe = "blender_connector.probe:main"
 
+# The diff-scoped architecture gates scan the declared package; the
+# env-sprawl gate allows the one declared configuration module; the
+# stdio purity gate scans the whole package as the served surface:
+# stdout stays the JSON-RPC channel, so every served module routes its
+# diagnostics through stderr (the probe's JSON result included; its
+# exit code is the machine signal).
+[tool.pipelines_hooks]
+packages = ["blender_connector"]
+
+[tool.pipelines_hooks.env_sprawl]
+allow_files = ["blender_connector/upstreams.py"]
+
+[tool.pipelines_hooks.stdout_writes]
+served_paths = ["blender_connector"]
+
 # Fleet contribution: advertise this package's prompts so scion-sdk
 # discovers and federates them without importing the agent code.
 [project.entry-points."scion_sdk.prompt_providers"]
