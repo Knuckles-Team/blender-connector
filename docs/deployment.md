@@ -55,9 +55,10 @@ The add-on refuses to start its socket server under `blender -b`
 (background mode), so a container runs Blender with a virtual display
 and starts the connector next to it:
 
-- Container one: `xvfb-run -a blender` with the add-on installed
+- Container one: Blender under a virtual display with the add-on installed
   (`mcp-for-blender install-addon`) and enabled by a startup script
-  (`--python`). The add-on binds to `localhost`, so keep both containers
+  (`--python`). Start `Xvfb` directly and wait for its socket; `xvfb-run`
+  hangs when it is PID 1 of a container. The add-on binds to `localhost`, so keep both containers
   in one pod or one network namespace and never publish the socket.
 - Container two: `blender-connector --transport streamable-http` with
   `mcp-for-blender` on `PATH`; it reaches the socket on
