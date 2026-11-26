@@ -7,6 +7,9 @@
   (`uv tool install mcp-for-blender`; the package was named `blender-mcp`
   before version 2, and only the new name installs the binary), with the Blender addon installed and enabled in a running
   Blender when you want live scene access
+- the upstream in its **own** environment: it pins an older MCP library
+  than the connector SDK, so installing both into one environment fails to
+  resolve (`uv tool install` and a separate virtual environment both work)
 - `uv` for the locked environment (optional but recommended)
 
 ## Source install

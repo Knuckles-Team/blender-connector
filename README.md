@@ -132,7 +132,7 @@ blender-connector                      # serve the MCP server (stdio by default)
 blender-connector-probe                # probe the upstream after an update
 ```
 
-The upstream binary is `mcp-for-blender` (the package was named `blender-mcp` before version 2). For a headless GPU deployment (virtual display, Cycles CUDA) see [docs/deployment.md](docs/deployment.md).
+Install the upstream in its own environment (`uv tool install` does this): it pins an older MCP library than the connector SDK, so one shared environment does not resolve. The upstream binary is `mcp-for-blender` (the package was named `blender-mcp` before version 2). For a headless GPU deployment (virtual display, Cycles CUDA) see [docs/deployment.md](docs/deployment.md).
 
 ---
 
