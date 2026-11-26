@@ -52,6 +52,14 @@ Unknowns settled during the build:
 
 ## Phase 1: Design
 
+- **Owner:** this connector owns the Blender upstream declaration, the native readiness tool and the probe. The SDK owns the registry; the upstream owns every Blender action.
+- **Cohesion:** one module holds the declaration and the environment reads (`upstreams.py`), one holds the native tool (`mcp/`), one the probe (`probe.py`).
+- **Dependency direction:** the connector depends on the SDK only and reaches Blender only through the upstream child. It never opens its own socket to Blender.
+- **Interface depth:** one declaration hides the pool, the namespace and the drift check behind the SDK.
+- **Special cases:** a missing upstream binary marks only the `blender` upstream unavailable; a stopped add-on makes the upstream return its own timeout text.
+- **State:** none. The connector stores nothing; the scene lives in the running Blender.
+- **Environment:** `BLENDER_HOST`, `BLENDER_PORT`, `DISABLE_TELEMETRY`, `BLENDER_MCP_SAFE_MODE` and `SCION_UPSTREAMS_INHERIT_ENV`.
+
 ### Existing system and reuse
 
 The SDK registry owns the proxy, the namespace, the activation tools, the stdio pool, the health report, the elicitation pass-through and the drift check. This connector adds data, not mechanisms: one declaration, one native tool, one probe, one example overlay.
