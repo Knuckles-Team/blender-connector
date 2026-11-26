@@ -207,8 +207,8 @@ functionality:
         cause: "`scene.camera` is not set"
         fix: "Assign `bpy.context.scene.camera` in a script, then look again."
       - symptom: "Rendering is slow or Cycles reports no GPU"
-        cause: "No compute device is enabled in Blender's Cycles preferences"
-        fix: "Enable the CUDA devices in `bpy.context.preferences.addons['cycles'].preferences` (set `compute_device_type = 'CUDA'`, call `get_devices()`, set `use = True` on CUDA devices), or accept CPU rendering."
+        cause: "No compute device is enabled in Blender's Cycles preferences; safe mode blocks script access to preferences"
+        fix: "Set `scene.cycles.device = 'GPU'` in a script (allowed) and ask the operator to enable the CUDA devices in the host's Blender startup or preferences; otherwise accept CPU rendering."
 
   - name: rig_animate
     description: "Rig objects with armatures and animate actions and keyframes."
