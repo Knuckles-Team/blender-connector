@@ -2,7 +2,7 @@
 name: blender
 skill_type: skill
 description: >-
-  Blender 3D scene work through the mcp-for-blender upstream - inspect the scene, build geometry, author materials, place cameras and lights, rig and animate, review the viewport, import assets, and generate 3D content. Use when the agent must work in a live Blender session through the blender_ prefixed tools and needs the right functionality skill. Do NOT use for rendering farms, file conversion outside a running Blender, or any other 3D application.
+  Blender 3D scene work through the mcp-for-blender upstream - inspect the scene, build geometry, author materials, place cameras and lights, rig and animate, review the viewport, import assets, and generate 3D content. Use when the agent must work in a live Blender session through the blender_ prefixed tools and needs the right functionality skill.
 license: MIT
 tags: [blender, 3d, mcp]
 metadata:

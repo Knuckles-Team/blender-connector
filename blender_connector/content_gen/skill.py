@@ -14,6 +14,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 from blender_connector.content_gen.errors import (
+    CONTENT_DESCRIPTION_TOO_LONG,
     CONTENT_FRONT_MATTER_UNSAFE,
     CONTENT_SKILL_TOOL_UNKNOWN,
     ContentError,
@@ -53,9 +54,16 @@ def _recovery_table(rows: tuple[Recovery, ...]) -> list[str]:
 
 #: Characters the engine refuses anywhere in a skill's front matter.
 _UNSAFE_FRONT_MATTER = "&*!{}"
+#: The longest description the connector-standard budget check accepts.
+_MAX_DESCRIPTION = 400
 
 
 def _frontmatter(name: str, description: str, tags: list[str]) -> list[str]:
+    if len(description) > _MAX_DESCRIPTION:
+        raise ContentError(
+            CONTENT_DESCRIPTION_TOO_LONG,
+            f"{name}: {len(description)} characters, the budget is {_MAX_DESCRIPTION}",
+        )
     unsafe = sorted(
         {c for c in name + description + " ".join(tags) if c in _UNSAFE_FRONT_MATTER}
     )
@@ -86,9 +94,8 @@ def render_skill(source: BlenderSource, snapshot: ToolSnapshot) -> str:
         _check_tools(app, func.tools, snapshot)
     description = (
         f"{source.summary} Use when the agent must work in a live Blender "
-        "session through the blender_ prefixed tools and needs the right functionality "
-        "skill. Do NOT use for rendering farms, file conversion outside a "
-        "running Blender, or any other 3D application."
+        "session through the blender_ prefixed tools and needs the right "
+        "functionality skill."
     )
     lines = _frontmatter(app, " ".join(description.split()), [app, "3d", "mcp"])
     lines += [
