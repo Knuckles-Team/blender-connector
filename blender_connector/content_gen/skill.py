@@ -14,6 +14,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 from blender_connector.content_gen.errors import (
+    CONTENT_FRONT_MATTER_UNSAFE,
     CONTENT_SKILL_TOOL_UNKNOWN,
     ContentError,
 )
@@ -50,7 +51,19 @@ def _recovery_table(rows: tuple[Recovery, ...]) -> list[str]:
     return lines
 
 
+#: Characters the engine refuses anywhere in a skill's front matter.
+_UNSAFE_FRONT_MATTER = "&*!{}"
+
+
 def _frontmatter(name: str, description: str, tags: list[str]) -> list[str]:
+    unsafe = sorted(
+        {c for c in name + description + " ".join(tags) if c in _UNSAFE_FRONT_MATTER}
+    )
+    if unsafe:
+        raise ContentError(
+            CONTENT_FRONT_MATTER_UNSAFE,
+            f"{name}: front matter holds {''.join(unsafe)!r}",
+        )
     return [
         "---",
         f"name: {name}",
@@ -73,7 +86,7 @@ def render_skill(source: BlenderSource, snapshot: ToolSnapshot) -> str:
         _check_tools(app, func.tools, snapshot)
     description = (
         f"{source.summary} Use when the agent must work in a live Blender "
-        "session through the blender_* tools and needs the right functionality "
+        "session through the blender_ prefixed tools and needs the right functionality "
         "skill. Do NOT use for rendering farms, file conversion outside a "
         "running Blender, or any other 3D application."
     )

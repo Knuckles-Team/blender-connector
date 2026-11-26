@@ -45,3 +45,22 @@ def test_prompts_link_existing_skills() -> None:
         document = json.loads(path.read_text(encoding="utf-8"))
         assert document["skills"], path.name
         assert set(document["skills"]) <= names, path.name
+
+
+def test_front_matter_holds_no_character_the_engine_refuses() -> None:
+    """Arbora onboarding refuses a skill whose front matter holds & * ! { or }."""
+    for path in sorted(ROOT.glob("skills/*/SKILL.md")):
+        front = path.read_text(encoding="utf-8").split("\n---\n", 1)[0]
+        assert not set(front) & set("&*!{}"), path.parent.name
+
+
+def test_the_generator_refuses_an_unsafe_description() -> None:
+    from blender_connector.content_gen.errors import (
+        CONTENT_FRONT_MATTER_UNSAFE,
+        ContentError,
+    )
+    from blender_connector.content_gen.skill import _frontmatter
+
+    with pytest.raises(ContentError) as raised:
+        _frontmatter("blender", "use the blender_* tools", ["blender"])
+    assert raised.value.code == CONTENT_FRONT_MATTER_UNSAFE

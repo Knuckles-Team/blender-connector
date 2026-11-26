@@ -14,6 +14,8 @@ CONTENT_SNAPSHOT_MISSING = "CONTENT_SNAPSHOT_MISSING"
 CONTENT_SKILL_TOOL_UNKNOWN = "CONTENT_SKILL_TOOL_UNKNOWN"
 #: A live tool fingerprint differs from the committed snapshot.
 CONTENT_SNAPSHOT_STALE = "CONTENT_SNAPSHOT_STALE"
+#: Skill front matter holds a character the engine refuses at onboarding.
+CONTENT_FRONT_MATTER_UNSAFE = "CONTENT_FRONT_MATTER_UNSAFE"
 
 
 class ContentError(ValueError):
