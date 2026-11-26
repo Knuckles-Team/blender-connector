@@ -68,4 +68,9 @@ and starts the connector next to it:
   and have the startup script set Cycles to the `CUDA` compute device
   type, enable every CUDA device and set `scene.cycles.device = 'GPU'`.
   Pascal-generation cards support CUDA but not OptiX.
-- Keep `BLENDER_MCP_SAFE_MODE=1` on the connector.
+- Share `/tmp` between the two containers: the upstream hands screenshots
+  from Blender to the server through files there, and `blender_look`
+  fails with a missing file otherwise.
+- Keep `BLENDER_MCP_SAFE_MODE=1` on the connector. Safe mode blocks script
+  access to Blender preferences, so the compute device is set by the
+  startup script, not by the agent.
