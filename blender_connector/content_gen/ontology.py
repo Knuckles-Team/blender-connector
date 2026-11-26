@@ -24,6 +24,7 @@ from blender_connector.content_gen.sources import (
     ALLOWED_PARENTS,
     BlenderSource,
     ToolSnapshot,
+    skill_name,
 )
 
 _KG = "http://knuckles.team/kg"
@@ -103,6 +104,41 @@ def render_ontology(source: BlenderSource, snapshot: ToolSnapshot) -> str:
         "    rdfs:domain app:BlenderUseCase ;",
         "    rdfs:range xsd:string .",
         "",
+        "app:ToolUseContract a owl:Class ;",
+        '    rdfs:label "Blender Tool-Use Contract" ;',
+        '    rdfs:comment "The ordered tool calls of one use case: which tools, in which order, with which arguments." ;',
+        "    rdfs:subClassOf :Task, core:Task .",
+        "",
+        "app:DataLocation a owl:Class ;",
+        '    rdfs:label "Blender Data Location" ;',
+        '    rdfs:comment "Where one kind of Blender data lives and how it is reached." ;',
+        "    rdfs:subClassOf :Artifact, core:Artifact .",
+        "",
+        "app:usesSkill a owl:DatatypeProperty ;",
+        '    rdfs:comment "The skill that carries the numbered steps of the use case." ;',
+        "    rdfs:domain app:BlenderUseCase ;",
+        "    rdfs:range xsd:string .",
+        "",
+        "app:hasPrompt a owl:DatatypeProperty ;",
+        '    rdfs:comment "The prompt (agent definition) that performs the use case." ;',
+        "    rdfs:domain app:BlenderUseCase ;",
+        "    rdfs:range xsd:string .",
+        "",
+        "app:toolOrder a owl:DatatypeProperty ;",
+        '    rdfs:comment "One ordered tool call of a contract, as index:tool." ;',
+        "    rdfs:domain app:ToolUseContract ;",
+        "    rdfs:range xsd:string .",
+        "",
+        "app:contractFor a owl:ObjectProperty ;",
+        '    rdfs:comment "Links a tool-use contract to its use case." ;',
+        "    rdfs:domain app:ToolUseContract ;",
+        "    rdfs:range app:BlenderUseCase .",
+        "",
+        "app:locatedAt a owl:DatatypeProperty ;",
+        '    rdfs:comment "How the data is reached." ;',
+        "    rdfs:domain app:DataLocation ;",
+        "    rdfs:range xsd:string .",
+        "",
         "app:app a app:BlenderApp ;",
         f'    app:appNamespace "{app}" ;',
         f'    app:appVersion "{snapshot.version}" .',
@@ -126,9 +162,29 @@ def render_ontology(source: BlenderSource, snapshot: ToolSnapshot) -> str:
         lines.append("    app:forApp app:app ;")
         for tool in func.tools:
             lines.append(f'    app:usesToolName "{_tool_ref(app, tool)}" ;')
+        lines.append(f'    app:usesSkill "{skill_name(app, func.name)}" ;')
+        lines.append(f'    app:hasPrompt "{app}-{func.name}" ;')
         lines[-1] = lines[-1].rstrip(" ;") + " ."
         lines.append("")
+        lines.append(f"app:contract_{_slug(func.name)} a app:ToolUseContract ;")
+        lines.append(f"    app:contractFor app:use_case_{_slug(func.name)} ;")
+        for index, step in enumerate(func.steps, 1):
+            if step.tool:
+                lines.append(
+                    f'    app:toolOrder "{index}:{_tool_ref(app, step.tool)}" ;'
+                )
+        lines[-1] = lines[-1].rstrip(" ;") + " ."
+        lines.append("")
+    for loc in source.data_locations:
+        lines.append(f"app:data_{_slug(loc.name)} a app:DataLocation ;")
+        lines.append(f'    rdfs:label "{loc.name}" ;')
+        lines.append(f'    app:locatedAt "{_esc(loc.where)}" .')
+        lines.append("")
     return "\n".join(lines).rstrip() + "\n"
+
+
+def _esc(text: str) -> str:
+    return text.replace("\\", "\\\\").replace('"', '\\"')
 
 
 def _slug(name: str) -> str:

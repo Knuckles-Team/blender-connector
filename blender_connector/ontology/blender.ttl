@@ -42,6 +42,41 @@ app:usesToolName a owl:DatatypeProperty ;
     rdfs:domain app:BlenderUseCase ;
     rdfs:range xsd:string .
 
+app:ToolUseContract a owl:Class ;
+    rdfs:label "Blender Tool-Use Contract" ;
+    rdfs:comment "The ordered tool calls of one use case: which tools, in which order, with which arguments." ;
+    rdfs:subClassOf :Task, core:Task .
+
+app:DataLocation a owl:Class ;
+    rdfs:label "Blender Data Location" ;
+    rdfs:comment "Where one kind of Blender data lives and how it is reached." ;
+    rdfs:subClassOf :Artifact, core:Artifact .
+
+app:usesSkill a owl:DatatypeProperty ;
+    rdfs:comment "The skill that carries the numbered steps of the use case." ;
+    rdfs:domain app:BlenderUseCase ;
+    rdfs:range xsd:string .
+
+app:hasPrompt a owl:DatatypeProperty ;
+    rdfs:comment "The prompt (agent definition) that performs the use case." ;
+    rdfs:domain app:BlenderUseCase ;
+    rdfs:range xsd:string .
+
+app:toolOrder a owl:DatatypeProperty ;
+    rdfs:comment "One ordered tool call of a contract, as index:tool." ;
+    rdfs:domain app:ToolUseContract ;
+    rdfs:range xsd:string .
+
+app:contractFor a owl:ObjectProperty ;
+    rdfs:comment "Links a tool-use contract to its use case." ;
+    rdfs:domain app:ToolUseContract ;
+    rdfs:range app:BlenderUseCase .
+
+app:locatedAt a owl:DatatypeProperty ;
+    rdfs:comment "How the data is reached." ;
+    rdfs:domain app:DataLocation ;
+    rdfs:range xsd:string .
+
 app:app a app:BlenderApp ;
     app:appNamespace "blender" ;
     app:appVersion "1.30.0" .
@@ -89,39 +124,136 @@ app:Render a owl:Class ;
 app:use_case_inspect_scene a app:BlenderUseCase ;
     app:forApp app:app ;
     app:usesToolName "blender_get_addon_status" ;
-    app:usesToolName "blender_get_scene_info" .
+    app:usesToolName "blender_get_scene_info" ;
+    app:usesSkill "blender-inspect-scene" ;
+    app:hasPrompt "blender-inspect_scene" .
+
+app:contract_inspect_scene a app:ToolUseContract ;
+    app:contractFor app:use_case_inspect_scene ;
+    app:toolOrder "1:blender_get_addon_status" ;
+    app:toolOrder "2:blender_get_scene_info" ;
+    app:toolOrder "3:blender_get_scene_info" .
 
 app:use_case_build_scene a app:BlenderUseCase ;
     app:forApp app:app ;
-    app:usesToolName "blender_execute_blender_code" .
+    app:usesToolName "blender_execute_blender_code" ;
+    app:usesToolName "blender_get_scene_info" ;
+    app:usesSkill "blender-build-scene" ;
+    app:hasPrompt "blender-build_scene" .
+
+app:contract_build_scene a app:ToolUseContract ;
+    app:contractFor app:use_case_build_scene ;
+    app:toolOrder "2:blender_execute_blender_code" ;
+    app:toolOrder "3:blender_get_scene_info" .
 
 app:use_case_materials a app:BlenderUseCase ;
     app:forApp app:app ;
-    app:usesToolName "blender_execute_blender_code" .
+    app:usesToolName "blender_execute_blender_code" ;
+    app:usesToolName "blender_look" ;
+    app:usesSkill "blender-materials" ;
+    app:hasPrompt "blender-materials" .
+
+app:contract_materials a app:ToolUseContract ;
+    app:contractFor app:use_case_materials ;
+    app:toolOrder "1:blender_execute_blender_code" ;
+    app:toolOrder "2:blender_execute_blender_code" ;
+    app:toolOrder "3:blender_look" .
 
 app:use_case_camera_lighting a app:BlenderUseCase ;
     app:forApp app:app ;
-    app:usesToolName "blender_execute_blender_code" .
+    app:usesToolName "blender_execute_blender_code" ;
+    app:usesToolName "blender_look" ;
+    app:usesSkill "blender-camera-lighting" ;
+    app:hasPrompt "blender-camera_lighting" .
+
+app:contract_camera_lighting a app:ToolUseContract ;
+    app:contractFor app:use_case_camera_lighting ;
+    app:toolOrder "1:blender_execute_blender_code" ;
+    app:toolOrder "2:blender_execute_blender_code" ;
+    app:toolOrder "3:blender_look" .
 
 app:use_case_rig_animate a app:BlenderUseCase ;
     app:forApp app:app ;
-    app:usesToolName "blender_execute_blender_code" .
+    app:usesToolName "blender_execute_blender_code" ;
+    app:usesToolName "blender_get_scene_info" ;
+    app:usesToolName "blender_look" ;
+    app:usesSkill "blender-rig-animate" ;
+    app:hasPrompt "blender-rig_animate" .
+
+app:contract_rig_animate a app:ToolUseContract ;
+    app:contractFor app:use_case_rig_animate ;
+    app:toolOrder "1:blender_execute_blender_code" ;
+    app:toolOrder "2:blender_execute_blender_code" ;
+    app:toolOrder "3:blender_get_scene_info" ;
+    app:toolOrder "4:blender_look" .
 
 app:use_case_review_viewport a app:BlenderUseCase ;
     app:forApp app:app ;
-    app:usesToolName "blender_look" .
+    app:usesToolName "blender_look" ;
+    app:usesToolName "blender_get_scene_info" ;
+    app:usesSkill "blender-review-viewport" ;
+    app:hasPrompt "blender-review_viewport" .
+
+app:contract_review_viewport a app:ToolUseContract ;
+    app:contractFor app:use_case_review_viewport ;
+    app:toolOrder "1:blender_look" ;
+    app:toolOrder "2:blender_look" ;
+    app:toolOrder "3:blender_get_scene_info" .
 
 app:use_case_assets a app:BlenderUseCase ;
     app:forApp app:app ;
+    app:usesToolName "blender_get_addon_status" ;
     app:usesToolName "blender_search_assets" ;
-    app:usesToolName "blender_import_asset" .
+    app:usesToolName "blender_import_asset" ;
+    app:usesSkill "blender-assets" ;
+    app:hasPrompt "blender-assets" .
+
+app:contract_assets a app:ToolUseContract ;
+    app:contractFor app:use_case_assets ;
+    app:toolOrder "1:blender_get_addon_status" ;
+    app:toolOrder "2:blender_search_assets" ;
+    app:toolOrder "3:blender_import_asset" .
 
 app:use_case_generative_3d a app:BlenderUseCase ;
     app:forApp app:app ;
+    app:usesToolName "blender_get_addon_status" ;
     app:usesToolName "blender_generate_3d" ;
-    app:usesToolName "blender_generate_gaussian_world" .
+    app:usesToolName "blender_generate_gaussian_world" ;
+    app:usesToolName "blender_get_scene_info" ;
+    app:usesSkill "blender-generative-3d" ;
+    app:hasPrompt "blender-generative_3d" .
+
+app:contract_generative_3d a app:ToolUseContract ;
+    app:contractFor app:use_case_generative_3d ;
+    app:toolOrder "1:blender_get_addon_status" ;
+    app:toolOrder "2:blender_generate_3d" ;
+    app:toolOrder "3:blender_generate_3d" ;
+    app:toolOrder "4:blender_get_scene_info" .
 
 app:use_case_session_controls a app:BlenderUseCase ;
     app:forApp app:app ;
     app:usesToolName "blender_disable_telemetry" ;
-    app:usesToolName "blender_record_trajectory_feedback" .
+    app:usesToolName "blender_record_trajectory_feedback" ;
+    app:usesSkill "blender-session-controls" ;
+    app:hasPrompt "blender-session_controls" .
+
+app:contract_session_controls a app:ToolUseContract ;
+    app:contractFor app:use_case_session_controls ;
+    app:toolOrder "1:blender_disable_telemetry" ;
+    app:toolOrder "2:blender_record_trajectory_feedback" .
+
+app:data_scene a app:DataLocation ;
+    rdfs:label "scene" ;
+    app:locatedAt "The open .blend session inside the running Blender, reached only through the add-on socket." .
+
+app:data_asset_libraries a app:DataLocation ;
+    rdfs:label "asset_libraries" ;
+    app:locatedAt "Poly Haven, Sketchfab and Poly Pizza, reached through `blender_search_assets` and `blender_import_asset`; availability per user comes from `blender_get_addon_status`." .
+
+app:data_generators a app:DataLocation ;
+    rdfs:label "generators" ;
+    app:locatedAt "The 3D generation providers (for example Meshy) and the world generator, reached through `blender_generate_3d` and `blender_generate_gaussian_world`; each call may cost money or a monthly generation." .
+
+app:data_renders a app:DataLocation ;
+    rdfs:label "renders" ;
+    app:locatedAt "Images returned by `blender_look` (kept in the conversation) and the in-session `Render Result` image." .

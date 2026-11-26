@@ -29,13 +29,58 @@ class AppClass:
 
 
 @dataclass(frozen=True)
+class Step:
+    """One numbered step: one objective, the tool call and the check."""
+
+    do: str
+    check: str = ""
+    tool: str = ""
+    args: str = ""
+
+
+@dataclass(frozen=True)
+class Recovery:
+    """One error-recovery row."""
+
+    symptom: str
+    cause: str
+    fix: str
+
+
+@dataclass(frozen=True)
 class Functionality:
     """One use case: an ordered tool list the prompt walks through."""
 
     name: str
     description: str
     tools: tuple[str, ...]
-    steps: tuple[str, ...] = field(default_factory=tuple)
+    steps: tuple[Step, ...] = field(default_factory=tuple)
+    use_when: str = ""
+    not_for: str = ""
+    recovery: tuple[Recovery, ...] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
+class DataLocation:
+    """Where one kind of Blender data lives and how it is reached."""
+
+    name: str
+    where: str
+
+
+@dataclass(frozen=True)
+class Role:
+    """One agent definition: the operator or a business role."""
+
+    name: str
+    title: str
+    goal: str
+    functionalities: tuple[str, ...]
+    reads: tuple[str, ...] = field(default_factory=tuple)
+    writes: tuple[str, ...] = field(default_factory=tuple)
+    approval_required: tuple[str, ...] = field(default_factory=tuple)
+    never: tuple[str, ...] = field(default_factory=tuple)
+    outputs: tuple[str, ...] = field(default_factory=tuple)
 
 
 @dataclass(frozen=True)
@@ -46,6 +91,10 @@ class BlenderSource:
     summary: str
     classes: tuple[AppClass, ...]
     functionalities: tuple[Functionality, ...]
+    prerequisites: tuple[str, ...] = field(default_factory=tuple)
+    data_locations: tuple[DataLocation, ...] = field(default_factory=tuple)
+    recovery: tuple[Recovery, ...] = field(default_factory=tuple)
+    roles: tuple[Role, ...] = field(default_factory=tuple)
 
 
 @dataclass(frozen=True)
@@ -89,16 +138,78 @@ def load_app_source(path: Path) -> BlenderSource:
             name=str(item["name"]),
             description=str(item.get("description", "")),
             tools=tuple(str(t) for t in item.get("tools", [])),
-            steps=tuple(str(s) for s in item.get("steps", [])),
+            steps=tuple(_step(raw) for raw in item.get("steps", [])),
+            use_when=str(item.get("use_when", "")),
+            not_for=str(item.get("not_for", "")),
+            recovery=_recovery(item.get("recovery", [])),
         )
         for item in document.get("functionality", [])
         if isinstance(item, dict) and item.get("name")
     )
+    for func in functionalities:
+        for step in func.steps:
+            if step.tool and step.tool not in func.tools:
+                raise ValueError(
+                    f"{func.name}: step tool {step.tool!r} is not in its tool list"
+                )
+    roles = tuple(
+        Role(
+            name=str(item["name"]),
+            title=str(item.get("title", item["name"])),
+            goal=str(item.get("goal", "")),
+            functionalities=_strs(item.get("functionalities", [])),
+            reads=_strs(item.get("reads", [])),
+            writes=_strs(item.get("writes", [])),
+            approval_required=_strs(item.get("approval_required", [])),
+            never=_strs(item.get("never", [])),
+            outputs=_strs(item.get("outputs", [])),
+        )
+        for item in document.get("roles", [])
+        if isinstance(item, dict) and item.get("name")
+    )
+    known = {func.name for func in functionalities}
+    for role in roles:
+        for name in role.functionalities:
+            if name not in known:
+                raise ValueError(f"role {role.name}: unknown functionality {name!r}")
     return BlenderSource(
         app=app,
         summary=str(document.get("summary", "")).strip(),
         classes=classes,
         functionalities=functionalities,
+        prerequisites=_strs(document.get("prerequisites", [])),
+        data_locations=tuple(
+            DataLocation(name=str(i["name"]), where=str(i.get("where", "")))
+            for i in document.get("data_locations", [])
+            if isinstance(i, dict) and i.get("name")
+        ),
+        recovery=_recovery(document.get("recovery", [])),
+        roles=roles,
+    )
+
+
+def _strs(values) -> tuple[str, ...]:
+    return tuple(str(v) for v in values or [])
+
+
+def _step(raw) -> Step:
+    if isinstance(raw, str):
+        return Step(do=raw)
+    return Step(
+        do=str(raw["do"]),
+        check=str(raw.get("check", "")),
+        tool=str(raw.get("tool", "")),
+        args=str(raw.get("args", "")),
+    )
+
+
+def _recovery(rows) -> tuple[Recovery, ...]:
+    return tuple(
+        Recovery(
+            symptom=str(r["symptom"]), cause=str(r.get("cause", "")), fix=str(r["fix"])
+        )
+        for r in rows or []
+        if isinstance(r, dict) and r.get("symptom")
     )
 
 
@@ -129,3 +240,8 @@ def first_sentence(text: str) -> str:
     if match is None:
         return text
     return match.group(0).strip()
+
+
+def skill_name(app: str, functionality: str) -> str:
+    """The Agent Skill name: lowercase with hyphens, matching its folder."""
+    return f"{app}-{functionality.replace('_', '-')}"

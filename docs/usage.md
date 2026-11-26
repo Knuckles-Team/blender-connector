@@ -25,7 +25,7 @@ drift (`scripts/generate_blender_content.py --check` / `--live`).
 ## Ready
 
 Call `handshake` before the first `blender_*` call. It reports whether
-`blender-mcp` is on the PATH and whether the addon socket
+`mcp-for-blender` is on the PATH and whether the addon socket
 (`BLENDER_HOST`/`BLENDER_PORT`, default `localhost:9876`) answers. A
 missing socket usually means Blender is not running with the addon
 enabled. `registry_status` reports the upstream's registry state and
@@ -34,7 +34,7 @@ refusal code.
 ## Governance
 
 - The child environment is clean: only `SCION_UPSTREAMS_INHERIT_ENV`
-  names reach it (default: `PATH,HOME,LANG,DISABLE_TELEMETRY,BLENDER_HOST,BLENDER_PORT`).
+  names reach it (default: `PATH,HOME,LANG,DISABLE_TELEMETRY,BLENDER_HOST,BLENDER_PORT,BLENDER_MCP_SAFE_MODE`).
 - `DISABLE_TELEMETRY=1` is the shipped start value.
 - `execute_blender_code` runs arbitrary Python inside Blender — inherent
   to the upstream; the connector re-gates nothing and adds no second

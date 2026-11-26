@@ -10,4 +10,4 @@ Run the proof of each row from a fresh checkout after `uv sync`.
 - CONN-BLENDER-CONNECTOR-CONTENT-R006: `uv run pytest tests/test_content_drift.py::test_committed_content_matches_snapshot -q`
 - CONN-BLENDER-CONNECTOR-CONTENT-R007: `uv run pytest tests/test_content_drift.py -q`
 
-Regenerate content with `uv run python scripts/generate_blender_content.py --write`. Check it with `--check`. Refresh the snapshot with `--refresh` on a host that has the `blender-mcp` binary. Run the live gate with `--live`.
+Regenerate content with `uv run python scripts/generate_blender_content.py --write`. Check it with `--check`. Refresh the snapshot with `--refresh` on a host that has the `mcp-for-blender` binary. Run the live gate with `--live`.

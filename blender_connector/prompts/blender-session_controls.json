@@ -2,7 +2,7 @@
   "task": "blender-session_controls",
   "type": "prompt",
   "schema_version": "1.0",
-  "prompt_version": "0.1.0",
+  "prompt_version": "0.2.0",
   "source": "blender-connector",
   "description": "Session maintenance: telemetry opt-out and trajectory feedback.",
   "metadata": {
@@ -19,14 +19,18 @@
     ]
   },
   "instructions": {
-    "core_directive": "Use only the blender upstream of the blender-connector connector. The namespace `blender` is active by default; if the operator set lazy activation, activate it with registry_activate first. Every tool below is namespaced blender_<tool>. Work through these tools in order: `blender_disable_telemetry`, `blender_record_trajectory_feedback`. Steps: (1) Disable telemetry for the session when required. (2) Record trajectory feedback as the workflow needs. Report a refusal payload when a tool refuses; never retry past a refusal.",
+    "core_directive": "Use only the blender upstream of the blender-connector connector. The namespace `blender` is active by default; if the operator set lazy activation, activate it with registry_activate first. Every tool below is namespaced blender_<tool>. Call `handshake` first and stop with a recovery report when it is not ready. Save the .blend file before running code. Use this when: The user asks to stop data collection, or reacts to a result (accept, reject, undo, correction). Do not use it for: Any scene work, and never to turn telemetry back on: only the user can do that in Blender preferences. Tools: `blender_disable_telemetry`, `blender_record_trajectory_feedback`. Steps, each with one objective and a check you must pass before the next: (1) Disable telemetry for the session when the user asks. Call `blender_disable_telemetry`. Check: The reply confirms collection is off; `blender_get_addon_status` shows `telemetry_consent` off. (2) Record the user's reaction to a result as feedback. Call `blender_record_trajectory_feedback`. Check: The reply confirms the feedback row was recorded for the last step. On failure follow the recovery table of the skill `blender-session-controls`; report a refusal payload when a tool refuses and never retry past a refusal.",
     "quality_checklist": [
-      "the blender namespace was available before the first tool call",
+      "the blender namespace was available and handshake was ready before the first tool call",
+      "every step's check passed before the next step ran",
       "every tool named in this prompt exists in the upstream snapshot",
       "refusals are reported to the operator, never retried silently"
     ]
   },
-  "skills": [],
+  "skills": [
+    "blender",
+    "blender-session-controls"
+  ],
   "tools": [
     "blender_disable_telemetry",
     "blender_record_trajectory_feedback"

@@ -2,7 +2,7 @@
   "task": "blender-materials",
   "type": "prompt",
   "schema_version": "1.0",
-  "prompt_version": "0.1.0",
+  "prompt_version": "0.2.0",
   "source": "blender-connector",
   "description": "Author materials, textures and node graphs for objects.",
   "metadata": {
@@ -19,16 +19,21 @@
     ]
   },
   "instructions": {
-    "core_directive": "Use only the blender upstream of the blender-connector connector. The namespace `blender` is active by default; if the operator set lazy activation, activate it with registry_activate first. Every tool below is namespaced blender_<tool>. Work through these tools in order: `blender_execute_blender_code`. Steps: (1) Create the material and assign it to the target object. (2) Build the node graph. (3) Verify with a viewport look. Report a refusal payload when a tool refuses; never retry past a refusal.",
+    "core_directive": "Use only the blender upstream of the blender-connector connector. The namespace `blender` is active by default; if the operator set lazy activation, activate it with registry_activate first. Every tool below is namespaced blender_<tool>. Call `handshake` first and stop with a recovery report when it is not ready. Save the .blend file before running code. Use this when: Creating or editing a material, wiring a shader node graph, assigning a material to an object, or setting texture inputs. Do not use it for: Downloading a ready-made PBR texture set (use blender-assets with asset_type textures). Tools: `blender_execute_blender_code`, `blender_look`. Steps, each with one objective and a check you must pass before the next: (1) Create the material with nodes and assign it to the target object. Call `blender_execute_blender_code`. Check: The printed list contains the new material name. (2) Build or adjust the node graph (textures, mix, bump) with further small scripts. Call `blender_execute_blender_code`. Check: The printed node names include every node you intended to add, and links are listed when you print `mat.node_tree.links`. (3) Verify with a rendered look at the object. Call `blender_look`. Check: The returned image shows the material on the object under the scene lighting. If it is black or pink, see recovery. On failure follow the recovery table of the skill `blender-materials`; report a refusal payload when a tool refuses and never retry past a refusal.",
     "quality_checklist": [
-      "the blender namespace was available before the first tool call",
+      "the blender namespace was available and handshake was ready before the first tool call",
+      "every step's check passed before the next step ran",
       "every tool named in this prompt exists in the upstream snapshot",
       "refusals are reported to the operator, never retried silently"
     ]
   },
-  "skills": [],
+  "skills": [
+    "blender",
+    "blender-materials"
+  ],
   "tools": [
-    "blender_execute_blender_code"
+    "blender_execute_blender_code",
+    "blender_look"
   ],
   "requires_namespace": "blender"
 }

@@ -13,4 +13,4 @@ Run the proof of each row from a fresh checkout after `uv sync`. Each command ex
 - CONN-BLENDER-CONNECTOR-R009: `uv run pytest tests/test_phase1_gate.py -q`
 - CONN-BLENDER-CONNECTOR-R010: `uv run pytest tests/test_content_drift.py -q` plus `uv run python scripts/generate_blender_content.py --check`
 
-The live gate runs only on a host that has the `blender-mcp` binary: `uv run python scripts/generate_blender_content.py --live`, together with `uv run blender-connector-probe`.
+The live gate runs only on a host that has the `mcp-for-blender` binary: `uv run python scripts/generate_blender_content.py --live`, together with `uv run blender-connector-probe`.

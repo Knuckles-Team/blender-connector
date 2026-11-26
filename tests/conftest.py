@@ -12,7 +12,7 @@ import pytest
 
 @pytest.fixture
 def blender_cli_factory(tmp_path, monkeypatch):
-    """Place the fixture upstream on the PATH as ``blender-mcp``.
+    """Place the fixture upstream on the PATH as ``mcp-for-blender``.
 
     Returns ``make(**knobs) -> wrapper_path``. The factory prepends its
     bin directory to the PATH for the rest of the test.
@@ -23,7 +23,7 @@ def blender_cli_factory(tmp_path, monkeypatch):
     monkeypatch.setenv("PATH", str(bin_dir) + os.pathsep + os.environ["PATH"])
 
     def make(*, die=False, drift=False, version="2.0.0-fixture"):
-        wrapper = bin_dir / "blender-mcp"
+        wrapper = bin_dir / "mcp-for-blender"
         env_lines = []
         if die:
             env_lines.append("BLENDER_FIXTURE_DIE=1")

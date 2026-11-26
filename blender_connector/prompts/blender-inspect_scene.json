@@ -2,7 +2,7 @@
   "task": "blender-inspect_scene",
   "type": "prompt",
   "schema_version": "1.0",
-  "prompt_version": "0.1.0",
+  "prompt_version": "0.2.0",
   "source": "blender-connector",
   "description": "Report the addon status, the connection state and the scene's objects and materials.",
   "metadata": {
@@ -19,14 +19,18 @@
     ]
   },
   "instructions": {
-    "core_directive": "Use only the blender upstream of the blender-connector connector. The namespace `blender` is active by default; if the operator set lazy activation, activate it with registry_activate first. Every tool below is namespaced blender_<tool>. Work through these tools in order: `blender_get_addon_status`, `blender_get_scene_info`. Steps: (1) Check the addon status. (2) Read the scene inventory. Report a refusal payload when a tool refuses; never retry past a refusal.",
+    "core_directive": "Use only the blender upstream of the blender-connector connector. The namespace `blender` is active by default; if the operator set lazy activation, activate it with registry_activate first. Every tool below is namespaced blender_<tool>. Call `handshake` first and stop with a recovery report when it is not ready. Save the .blend file before running code. Use this when: Starting a session, before editing, or when you need facts about what is in the scene: counts, positions, sizes, materials, modifiers, mesh health or render settings. Do not use it for: Seeing the scene as an image (use blender-review-viewport) or changing anything (use blender-build-scene). Tools: `blender_get_addon_status`, `blender_get_scene_info`. Steps, each with one objective and a check you must pass before the next: (1) Check the add-on and the connection. Call `blender_get_addon_status`. Check: The reply names the Blender version, says the add-on matches this server, and lists which libraries and generators are on. Anything else is a recovery row. (2) Read the scene inventory with the fields you need. Call `blender_get_scene_info`. Check: A header line with object counts, then one line per object. An empty scene says so explicitly. (3) Narrow to one object or hierarchy when the inventory is long. Call `blender_get_scene_info`. Check: Only that object and its children are listed, with the requested fields. On failure follow the recovery table of the skill `blender-inspect-scene`; report a refusal payload when a tool refuses and never retry past a refusal.",
     "quality_checklist": [
-      "the blender namespace was available before the first tool call",
+      "the blender namespace was available and handshake was ready before the first tool call",
+      "every step's check passed before the next step ran",
       "every tool named in this prompt exists in the upstream snapshot",
       "refusals are reported to the operator, never retried silently"
     ]
   },
-  "skills": [],
+  "skills": [
+    "blender",
+    "blender-inspect-scene"
+  ],
   "tools": [
     "blender_get_addon_status",
     "blender_get_scene_info"

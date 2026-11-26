@@ -2,7 +2,7 @@
   "task": "blender-build_scene",
   "type": "prompt",
   "schema_version": "1.0",
-  "prompt_version": "0.1.0",
+  "prompt_version": "0.2.0",
   "source": "blender-connector",
   "description": "Add, move and shape objects with Python executed inside Blender.",
   "metadata": {
@@ -19,16 +19,21 @@
     ]
   },
   "instructions": {
-    "core_directive": "Use only the blender upstream of the blender-connector connector. The namespace `blender` is active by default; if the operator set lazy activation, activate it with registry_activate first. Every tool below is namespaced blender_<tool>. Work through these tools in order: `blender_execute_blender_code`. Steps: (1) Plan the geometry change in bpy terms. (2) Execute it in one bounded code block. (3) Verify the result with the scene inventory or a look. Report a refusal payload when a tool refuses; never retry past a refusal.",
+    "core_directive": "Use only the blender upstream of the blender-connector connector. The namespace `blender` is active by default; if the operator set lazy activation, activate it with registry_activate first. Every tool below is namespaced blender_<tool>. Call `handshake` first and stop with a recovery report when it is not ready. Save the .blend file before running code. Use this when: Creating, moving, scaling, parenting, deleting or modifying objects and meshes; any scene change that has no dedicated tool. Do not use it for: Downloading a library asset (use blender-assets), producing a new textured model from a prompt (use blender-generative-3d) or only looking at the scene (use blender-review-viewport). Tools: `blender_execute_blender_code`, `blender_get_scene_info`. Steps, each with one objective and a check you must pass before the next: (1) Plan the change in bpy terms and keep it to one small step: one object or one operation. Check: You can state in one sentence what the script adds or changes, the object names it touches, and what it will print. (2) Execute it in one bounded code block that prints what you need to know. Call `blender_execute_blender_code`. Check: The printed output names the object and its dimensions. A Python traceback means the step failed: read its last line. (3) Verify the result with the scene inventory or a look. Call `blender_get_scene_info`. Check: The object exists with the expected location, size and mesh health; the ground field says on ground, floating or below. On failure follow the recovery table of the skill `blender-build-scene`; report a refusal payload when a tool refuses and never retry past a refusal.",
     "quality_checklist": [
-      "the blender namespace was available before the first tool call",
+      "the blender namespace was available and handshake was ready before the first tool call",
+      "every step's check passed before the next step ran",
       "every tool named in this prompt exists in the upstream snapshot",
       "refusals are reported to the operator, never retried silently"
     ]
   },
-  "skills": [],
+  "skills": [
+    "blender",
+    "blender-build-scene"
+  ],
   "tools": [
-    "blender_execute_blender_code"
+    "blender_execute_blender_code",
+    "blender_get_scene_info"
   ],
   "requires_namespace": "blender"
 }

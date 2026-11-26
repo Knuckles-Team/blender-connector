@@ -3,9 +3,9 @@
 ## Requirements
 
 - Python 3.12–3.14
-- the upstream binary `blender-mcp` on the `PATH`
-  (`uv tool install blender-mcp`, the community `mcp-for-blender`
-  project), with the Blender addon installed and enabled in a running
+- the upstream binary `mcp-for-blender` on the `PATH`
+  (`uv tool install mcp-for-blender`; the package was named `blender-mcp`
+  before version 2, and only the new name installs the binary), with the Blender addon installed and enabled in a running
   Blender when you want live scene access
 - `uv` for the locked environment (optional but recommended)
 
@@ -38,7 +38,7 @@ blender-connector-probe   # verify the upstream answers the MCP handshake
       "args": ["run", "blender-connector"],
       "env": {
         "DISABLE_TELEMETRY": "1",
-        "SCION_UPSTREAMS_INHERIT_ENV": "PATH,HOME,LANG,DISABLE_TELEMETRY,BLENDER_HOST,BLENDER_PORT"
+        "SCION_UPSTREAMS_INHERIT_ENV": "PATH,HOME,LANG,DISABLE_TELEMETRY,BLENDER_HOST,BLENDER_PORT,BLENDER_MCP_SAFE_MODE"
       }
     }
   }

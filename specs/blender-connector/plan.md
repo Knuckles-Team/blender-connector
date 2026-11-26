@@ -12,7 +12,7 @@ The connector declares one upstream and the SDK registry serves it. This plan co
 - **Primary Dependencies**: scion-sdk with the `mcp` extra, which pins the MCP framework; PyYAML for the authored source
 - **Storage**: N/A; the connector stores nothing, and generated content is committed files
 - **Testing**: pytest with a fixture upstream binary on `PATH`; the live gate is opt-in
-- **Target Platform**: Linux developer hosts that carry the `blender-mcp` binary
+- **Target Platform**: Linux developer hosts that carry the `mcp-for-blender` binary
 - **Project Type**: connector (MCP server)
 - **Performance Goals**: N/A
 - **Constraints**: the SDK owns the registry, the lifecycle and the drift check; the connector reimplements none of them
@@ -62,7 +62,7 @@ Namespacing: `blender_<tool>`, one lowercase word for the app. The native tool c
 
 Activation: `active` in the declaration. The ten proxied tools carry no activation pressure, so the first list holds the full surface. An operator may still set lazy activation per deployment.
 
-Environment: the child environment is clean by construction. The shipped whitelist `PATH,HOME,LANG,DISABLE_TELEMETRY,BLENDER_HOST,BLENDER_PORT` is the only way the telemetry opt-out and the socket address reach the upstream.
+Environment: the child environment is clean by construction. The shipped whitelist `PATH,HOME,LANG,DISABLE_TELEMETRY,BLENDER_HOST,BLENDER_PORT,BLENDER_MCP_SAFE_MODE` is the only way the telemetry opt-out and the socket address reach the upstream.
 
 Sandbox: an explicit empty grant. The upstream has no root flags, so both tuples are empty and no flag is ever passed.
 

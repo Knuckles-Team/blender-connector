@@ -12,7 +12,7 @@ Governing spec: [spec.md](spec.md). Rows: [requirements.md](requirements.md).
 - **Primary Dependencies**: scion-sdk with the `mcp` extra; PyYAML for the authored source
 - **Storage**: N/A; the connector stores nothing, and generated content is committed files
 - **Testing**: pytest against the package directories; the live gate runs on a host with the binary
-- **Target Platform**: Linux developer hosts that carry the `blender-mcp` binary
+- **Target Platform**: Linux developer hosts that carry the `mcp-for-blender` binary
 - **Project Type**: connector (MCP server)
 - **Performance Goals**: N/A
 - **Constraints**: the renderers are pure functions; the generator is the only writer

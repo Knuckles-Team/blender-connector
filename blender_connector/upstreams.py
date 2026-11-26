@@ -37,14 +37,16 @@ __all__ = [
 UPSTREAM_NAME = "blender"
 
 #: The upstream binary on the operator's PATH.
-BLENDER_COMMAND = "blender-mcp"
+BLENDER_COMMAND = "mcp-for-blender"
 
 #: The SDK setting that whitelists the child environment names.
 INHERIT_ENV_SETTING = "SCION_UPSTREAMS_INHERIT_ENV"
 
-#: The starting whitelist: the SDK basics plus the telemetry opt-out and
-#: the Blender socket address the upstream resolves from the environment.
-INHERIT_ENV_DEFAULT = "PATH,HOME,LANG,DISABLE_TELEMETRY,BLENDER_HOST,BLENDER_PORT"
+#: The starting whitelist: the SDK basics plus the telemetry opt-out, the
+#: Blender socket address and the upstream's safe-mode switch.
+INHERIT_ENV_DEFAULT = (
+    "PATH,HOME,LANG,DISABLE_TELEMETRY,BLENDER_HOST,BLENDER_PORT,BLENDER_MCP_SAFE_MODE"
+)
 
 #: The addon socket address the upstream resolves from the operator
 #: environment. This module is the package's declared configuration

@@ -32,7 +32,7 @@ A graph user asks which use cases exist and which tools each one walks through.
 
 ### User Story 3 - Keep content current after an upstream update (Priority: P2)
 
-A maintainer updates `blender-mcp` and sees what changed before the next client hits it.
+A maintainer updates `mcp-for-blender` and sees what changed before the next client hits it.
 
 **Acceptance Scenarios**:
 
@@ -66,7 +66,7 @@ A maintainer updates `blender-mcp` and sees what changed before the next client 
 
 - The tool names in the snapshot are the upstream names; the renderers add the `blender_` prefix when they write content.
 - The engine rows `MEDULLA-TYPED-PACKS-R071.2`, `MEDULLA-TYPED-PACKS-R102.3` and `MEDULLA-TYPED-PACKS-R105` already cover how a pack ontology joins the core, so this spec adds no engine row.
-- Only a host that carries the `blender-mcp` binary runs `--refresh` and `--live`.
+- Only a host that carries the `mcp-for-blender` binary runs `--refresh` and `--live`.
 
 ## Scope and interfaces
 
