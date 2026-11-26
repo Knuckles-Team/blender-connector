@@ -64,3 +64,23 @@ def test_the_generator_refuses_an_unsafe_description() -> None:
     with pytest.raises(ContentError) as raised:
         _frontmatter("blender", "use the blender_* tools", ["blender"])
     assert raised.value.code == CONTENT_FRONT_MATTER_UNSAFE
+
+
+def test_descriptions_are_inside_the_connector_standard_budget() -> None:
+    """The connector-standard hook fails a description over 400 characters."""
+    for path in sorted(ROOT.glob("skills/*/SKILL.md")):
+        front = path.read_text(encoding="utf-8").split("\n---\n", 1)[0]
+        text = front.split("description:", 1)[1].split("\nlicense:", 1)[0]
+        assert len(" ".join(text.replace(">-", "").split())) <= 400, path.parent.name
+
+
+def test_the_generator_refuses_an_overlong_description() -> None:
+    from blender_connector.content_gen.errors import (
+        CONTENT_DESCRIPTION_TOO_LONG,
+        ContentError,
+    )
+    from blender_connector.content_gen.skill import _frontmatter
+
+    with pytest.raises(ContentError) as raised:
+        _frontmatter("blender", "word " * 100, ["blender"])
+    assert raised.value.code == CONTENT_DESCRIPTION_TOO_LONG

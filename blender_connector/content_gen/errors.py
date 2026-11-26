@@ -16,6 +16,8 @@ CONTENT_SKILL_TOOL_UNKNOWN = "CONTENT_SKILL_TOOL_UNKNOWN"
 CONTENT_SNAPSHOT_STALE = "CONTENT_SNAPSHOT_STALE"
 #: Skill front matter holds a character the engine refuses at onboarding.
 CONTENT_FRONT_MATTER_UNSAFE = "CONTENT_FRONT_MATTER_UNSAFE"
+#: Skill description is longer than the connector-standard budget.
+CONTENT_DESCRIPTION_TOO_LONG = "CONTENT_DESCRIPTION_TOO_LONG"
 
 
 class ContentError(ValueError):
