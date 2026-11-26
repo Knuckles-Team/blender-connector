@@ -40,7 +40,14 @@ Downloading a library asset (use blender-assets), producing a new textured model
 ## Steps
 
 1. **Plan the change in bpy terms and keep it to one small step: one object or one operation.**
-   - Check: You can state in one sentence what the script adds or changes, the object names it touches, and what it will print.
+   - Tool: `blender_get_scene_info`
+   - Arguments:
+
+     ```json
+     {"fields": ["placement"], "limit": 20}
+     ```
+
+   - Verify: You can state in one sentence what the script adds or changes, the object names it touches, and what it will print.
 2. **Execute it in one bounded code block that prints what you need to know.**
    - Tool: `blender_execute_blender_code`
    - Arguments:
@@ -49,7 +56,7 @@ Downloading a library asset (use blender-assets), producing a new textured model
      {"code": "import bpy\nbpy.ops.mesh.primitive_cube_add(size=1.0, location=(0, 0, 0.5))\nobj = bpy.context.active_object\nobj.name = \"Crate\"\nprint(obj.name, tuple(obj.location), tuple(obj.dimensions))"}
      ```
 
-   - Check: The printed output names the object and its dimensions. A Python traceback means the step failed: read its last line.
+   - Verify: The printed output names the object and its dimensions. A Python traceback means the step failed: read its last line.
 3. **Verify the result with the scene inventory or a look.**
    - Tool: `blender_get_scene_info`
    - Arguments:
@@ -58,11 +65,11 @@ Downloading a library asset (use blender-assets), producing a new textured model
      {"query": "Crate", "fields": ["placement", "ground", "topology"]}
      ```
 
-   - Check: The object exists with the expected location, size and mesh health; the ground field says on ground, floating or below.
+   - Verify: The object exists with the expected location, size and mesh health; the ground field says on ground, floating or below.
 
-## Error recovery
+## Failure recovery
 
-| Symptom | Likely cause | Fix |
+| Failure | Cause | Recovery |
 |---|---|---|
 | `AttributeError` or `RuntimeError: Operator bpy.ops... poll() failed` | The operator needs a mode or context (for example Object Mode, an active object) | Set the mode first (`bpy.ops.object.mode_set(mode='OBJECT')`) and select the target (`obj.select_set(True)`; `bpy.context.view_layer.objects.active = obj`), or use `bpy.data` calls that need no context. |
 | The call times out | The script is too large or runs a long operation | Split it into smaller steps; do heavy work (subdivision, bakes, renders) one at a time. |

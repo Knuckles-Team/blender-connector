@@ -143,6 +143,7 @@ app:use_case_build_scene a app:BlenderUseCase ;
 
 app:contract_build_scene a app:ToolUseContract ;
     app:contractFor app:use_case_build_scene ;
+    app:toolOrder "1:blender_get_scene_info" ;
     app:toolOrder "2:blender_execute_blender_code" ;
     app:toolOrder "3:blender_get_scene_info" .
 

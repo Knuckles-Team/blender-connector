@@ -49,7 +49,7 @@ Ordinary scene building, ground, rooms or backdrops you can model or find (use b
      {}
      ```
 
-   - Check: `generators` (or `worlds`) lists a provider as on, and the user has agreed to a billable generation.
+   - Verify: `generators` (or `worlds`) lists a provider as on, and the user has agreed to a billable generation.
 2. **Describe one object (or one world) and start the generation.**
    - Tool: `blender_generate_3d`
    - Arguments:
@@ -58,7 +58,7 @@ Ordinary scene building, ground, rooms or backdrops you can model or find (use b
      {"prompt": "a weathered wooden barrel", "name": "Barrel", "wait_seconds": 45}
      ```
 
-   - Check: Either the object is imported, or you receive a job handle.
+   - Verify: Either the object is imported, or you receive a job handle.
 3. **If a job handle came back, call again with the job until it finishes.**
    - Tool: `blender_generate_3d`
    - Arguments:
@@ -67,7 +67,7 @@ Ordinary scene building, ground, rooms or backdrops you can model or find (use b
      {"job": "<job handle>", "name": "Barrel"}
      ```
 
-   - Check: The object is imported; repeating a request whose job is unfinished resumes it rather than paying again.
+   - Verify: The object is imported; repeating a request whose job is unfinished resumes it rather than paying again.
 4. **Inspect the result and integrate it (scale, place, ground).**
    - Tool: `blender_get_scene_info`
    - Arguments:
@@ -76,11 +76,11 @@ Ordinary scene building, ground, rooms or backdrops you can model or find (use b
      {"query": "Barrel", "fields": ["placement", "size", "ground"]}
      ```
 
-   - Check: Size and orientation are plausible; fix with a `blender_execute_blender_code` step.
+   - Verify: Size and orientation are plausible; fix with a `blender_execute_blender_code` step.
 
-## Error recovery
+## Failure recovery
 
-| Symptom | Likely cause | Fix |
+| Failure | Cause | Recovery |
 |---|---|---|
 | No generator is available | No provider key or Premium access is configured in the add-on | Report which providers `blender_get_addon_status` lists and ask the user to enable one in the add-on preferences; do not retry. |
 | The call returns a job handle instead of a model | Generation takes 1-3 minutes and a call waits at most 45 seconds | Call the same tool again with `job` and the same `name`. |

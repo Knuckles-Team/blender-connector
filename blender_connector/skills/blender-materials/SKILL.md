@@ -47,7 +47,7 @@ Downloading a ready-made PBR texture set (use blender-assets with asset_type tex
      {"code": "import bpy\nobj = bpy.data.objects[\"Crate\"]\nmat = bpy.data.materials.new(\"CrateWood\")\nmat.use_nodes = True\nbsdf = mat.node_tree.nodes[\"Principled BSDF\"]\nbsdf.inputs[\"Base Color\"].default_value = (0.45, 0.28, 0.12, 1.0)\nbsdf.inputs[\"Roughness\"].default_value = 0.6\nobj.data.materials.clear()\nobj.data.materials.append(mat)\nprint([m.name for m in obj.data.materials])"}
      ```
 
-   - Check: The printed list contains the new material name.
+   - Verify: The printed list contains the new material name.
 2. **Build or adjust the node graph (textures, mix, bump) with further small scripts.**
    - Tool: `blender_execute_blender_code`
    - Arguments:
@@ -56,7 +56,7 @@ Downloading a ready-made PBR texture set (use blender-assets with asset_type tex
      {"code": "import bpy\nmat = bpy.data.materials[\"CrateWood\"]\nprint([n.name for n in mat.node_tree.nodes])"}
      ```
 
-   - Check: The printed node names include every node you intended to add, and links are listed when you print `mat.node_tree.links`.
+   - Verify: The printed node names include every node you intended to add, and links are listed when you print `mat.node_tree.links`.
 3. **Verify with a rendered look at the object.**
    - Tool: `blender_look`
    - Arguments:
@@ -65,11 +65,11 @@ Downloading a ready-made PBR texture set (use blender-assets with asset_type tex
      {"mode": "angles", "target": ["Crate"], "shading": "rendered", "max_size": 512}
      ```
 
-   - Check: The returned image shows the material on the object under the scene lighting. If it is black or pink, see recovery.
+   - Verify: The returned image shows the material on the object under the scene lighting. If it is black or pink, see recovery.
 
-## Error recovery
+## Failure recovery
 
-| Symptom | Likely cause | Fix |
+| Failure | Cause | Recovery |
 |---|---|---|
 | The object renders pink or black | A texture image is missing or a node input is not connected | Print `[(n.name, n.type) for n in mat.node_tree.nodes]` and the links; reconnect the input, or replace the missing image with a flat color. |
 | The material is created but not visible on the object | It was never appended to the object's material slots, or the viewport shading is solid | Append it to `obj.data.materials` and use `shading: material` or `rendered` in the look. |
