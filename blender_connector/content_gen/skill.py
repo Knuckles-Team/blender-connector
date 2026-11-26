@@ -56,7 +56,9 @@ _UNSAFE_FRONT_MATTER = "&*!{}"
 
 
 def _frontmatter(name: str, description: str, tags: list[str]) -> list[str]:
-    unsafe = sorted({c for c in name + description + " ".join(tags) if c in _UNSAFE_FRONT_MATTER})
+    unsafe = sorted(
+        {c for c in name + description + " ".join(tags) if c in _UNSAFE_FRONT_MATTER}
+    )
     if unsafe:
         raise ContentError(
             CONTENT_FRONT_MATTER_UNSAFE,
