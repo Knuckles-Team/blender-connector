@@ -21,7 +21,7 @@ def test_single_stdio_declaration() -> None:
     assert decl.name == UPSTREAM_NAME == "blender"
     assert decl.effective_namespace == "blender"
     assert decl.kind == "stdio"
-    assert decl.command == BLENDER_COMMAND == "blender-mcp"
+    assert decl.command == BLENDER_COMMAND == "mcp-for-blender"
     assert decl.args == ()
     assert decl.env == {}
     # The upstream carries no read/write root flags: an explicit empty
@@ -43,4 +43,5 @@ def test_inherit_env_default_carries_telemetry_and_socket() -> None:
         "DISABLE_TELEMETRY",
         "BLENDER_HOST",
         "BLENDER_PORT",
+        "BLENDER_MCP_SAFE_MODE",
     }

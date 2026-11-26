@@ -10,12 +10,56 @@
 # mention search) are not part of that surface and are not listed here;
 # a future client with app support is a snapshot-refresh plus
 # functionality extension, gated by the drift checks.
+#
+# Every functionality renders one skill and one prompt. Each step carries
+# one objective (`do`), a `check` that proves it, and an optional concrete
+# `tool` call with JSON arguments (`args`). `recovery` rows are
+# symptom / cause / fix triples.
 
 app: blender
 summary: >
-  Blender 3D scene work through the mcp-for-blender upstream — inspect the
+  Blender 3D scene work through the mcp-for-blender upstream - inspect the
   scene, build geometry, author materials, place cameras and lights, rig and
   animate, review the viewport, import assets, and generate 3D content.
+
+# Facts shared by every skill and prompt.
+prerequisites:
+  - "A running Blender (3.0 or newer) with the MCP for Blender add-on enabled and its server started; the add-on listens on `BLENDER_HOST:BLENDER_PORT` (default `localhost:9876`)."
+  - "Call the connector's `handshake` tool first: `ready: true` means the add-on socket answers. `ready: false` means Blender is not running, the add-on is off, or the host and port do not match."
+  - "Save the .blend file before any `blender_execute_blender_code` call: that tool runs arbitrary Python inside the live session."
+  - "The connector never opens its own socket to Blender; every scene action goes through a `blender_*` tool."
+
+# Where the data lives; the ontology records these as data locations.
+data_locations:
+  - name: scene
+    where: "The open .blend session inside the running Blender, reached only through the add-on socket."
+  - name: asset_libraries
+    where: "Poly Haven, Sketchfab and Poly Pizza, reached through `blender_search_assets` and `blender_import_asset`; availability per user comes from `blender_get_addon_status`."
+  - name: generators
+    where: "The 3D generation providers (for example Meshy) and the world generator, reached through `blender_generate_3d` and `blender_generate_gaussian_world`; each call may cost money or a monthly generation."
+  - name: renders
+    where: "Images returned by `blender_look` (kept in the conversation) and the in-session `Render Result` image."
+
+# Rows shared by every skill (symptom / cause / fix).
+recovery:
+  - symptom: "`handshake` returns `ready: false`, or a `blender_*` call times out"
+    cause: "Blender is not running, the add-on server is stopped, or the host and port do not match the running instance"
+    fix: "Start Blender, open the 3D viewport sidebar (N), tab `MCP for Blender`, press `Start MCP Server`; then re-run `handshake` and confirm the port equals `BLENDER_PORT`."
+  - symptom: "`registry_status` shows the `blender` upstream `unavailable` with `UPSTREAM_SPAWN_FAILED`"
+    cause: "The `mcp-for-blender` binary is not on the connector's PATH"
+    fix: "Install it with `uv tool install mcp-for-blender` on the connector host, then call `registry_status` again. `handshake` reports `command_found`."
+  - symptom: "No `blender_*` tools are listed"
+    cause: "The `blender` namespace was deactivated or lazy activation is on"
+    fix: "Call `registry_activate` with the namespace `blender`, then list tools again."
+  - symptom: "`blender_get_addon_status` says the add-on is outdated"
+    cause: "The installed add-on does not match the server version"
+    fix: "Run `uvx mcp-for-blender install-addon` on the Blender host, then restart Blender or re-enable the add-on, and call `blender_get_addon_status` again."
+  - symptom: "A script is blocked with a reason"
+    cause: "Safe mode (`BLENDER_MCP_SAFE_MODE=1`) refused file, process, network or persistence access"
+    fix: "Rewrite the script without the blocked call (use Blender operators and `bpy.data` instead of direct file or process access) and run it again. Report the refusal; never switch safe mode off to get past it."
+  - symptom: "A call returns an error from Blender (Python traceback)"
+    cause: "The script or arguments were wrong for the current scene state"
+    fix: "Read the traceback's last line, inspect the scene with `blender_get_scene_info`, fix the one failing statement and rerun a smaller step."
 
 classes:
   - name: BlenderFile
@@ -46,73 +90,379 @@ classes:
 functionality:
   - name: inspect_scene
     description: "Report the addon status, the connection state and the scene's objects and materials."
+    use_when: "Starting a session, before editing, or when you need facts about what is in the scene: counts, positions, sizes, materials, modifiers, mesh health or render settings."
+    not_for: "Seeing the scene as an image (use blender-review-viewport) or changing anything (use blender-build-scene)."
     tools:
       - get_addon_status
       - get_scene_info
     steps:
-      - Check the addon status.
-      - Read the scene inventory.
+      - do: "Check the add-on and the connection."
+        tool: get_addon_status
+        args: "{}"
+        check: "The reply names the Blender version, says the add-on matches this server, and lists which libraries and generators are on. Anything else is a recovery row."
+      - do: "Read the scene inventory with the fields you need."
+        tool: get_scene_info
+        args: '{"fields": ["placement", "contents"], "limit": 50}'
+        check: "A header line with object counts, then one line per object. An empty scene says so explicitly."
+      - do: "Narrow to one object or hierarchy when the inventory is long."
+        tool: get_scene_info
+        args: '{"root": "Chair", "fields": ["placement", "materials", "modifiers", "topology"]}'
+        check: "Only that object and its children are listed, with the requested fields."
+    recovery:
+      - symptom: "The inventory is truncated"
+        cause: "More objects than `limit`"
+        fix: "Raise `limit`, or filter with `query` (name contains) or `root` (one hierarchy)."
+      - symptom: "A field you need is not offered"
+        cause: "`get_scene_info` covers placement, contents, health and settings only"
+        fix: "Read it with `blender_execute_blender_code` and `print(...)` (see blender-build-scene)."
+
   - name: build_scene
     description: "Add, move and shape objects with Python executed inside Blender."
+    use_when: "Creating, moving, scaling, parenting, deleting or modifying objects and meshes; any scene change that has no dedicated tool."
+    not_for: "Downloading a library asset (use blender-assets), producing a new textured model from a prompt (use blender-generative-3d) or only looking at the scene (use blender-review-viewport)."
     tools:
       - execute_blender_code
+      - get_scene_info
     steps:
-      - Plan the geometry change in bpy terms.
-      - Execute it in one bounded code block.
-      - Verify the result with the scene inventory or a look.
+      - do: "Plan the change in bpy terms and keep it to one small step: one object or one operation."
+        check: "You can state in one sentence what the script adds or changes, the object names it touches, and what it will print."
+      - do: "Execute it in one bounded code block that prints what you need to know."
+        tool: execute_blender_code
+        args: '{"code": "import bpy\nbpy.ops.mesh.primitive_cube_add(size=1.0, location=(0, 0, 0.5))\nobj = bpy.context.active_object\nobj.name = \"Crate\"\nprint(obj.name, tuple(obj.location), tuple(obj.dimensions))"}'
+        check: "The printed output names the object and its dimensions. A Python traceback means the step failed: read its last line."
+      - do: "Verify the result with the scene inventory or a look."
+        tool: get_scene_info
+        args: '{"query": "Crate", "fields": ["placement", "ground", "topology"]}'
+        check: "The object exists with the expected location, size and mesh health; the ground field says on ground, floating or below."
+    recovery:
+      - symptom: "`AttributeError` or `RuntimeError: Operator bpy.ops... poll() failed`"
+        cause: "The operator needs a mode or context (for example Object Mode, an active object)"
+        fix: "Set the mode first (`bpy.ops.object.mode_set(mode='OBJECT')`) and select the target (`obj.select_set(True)`; `bpy.context.view_layer.objects.active = obj`), or use `bpy.data` calls that need no context."
+      - symptom: "The call times out"
+        cause: "The script is too large or runs a long operation"
+        fix: "Split it into smaller steps; do heavy work (subdivision, bakes, renders) one at a time."
+      - symptom: "The object name has a `.001` suffix"
+        cause: "The name already existed"
+        fix: "Read the name back from the printed output and use that name in later steps."
+      - symptom: "The scene did not change as expected"
+        cause: "The script ran on a different object than you meant"
+        fix: "Print `[o.name for o in bpy.context.selected_objects]` before acting and address objects by name from `bpy.data.objects`."
+
   - name: materials
     description: "Author materials, textures and node graphs for objects."
+    use_when: "Creating or editing a material, wiring a shader node graph, assigning a material to an object, or setting texture inputs."
+    not_for: "Downloading a ready-made PBR texture set (use blender-assets with asset_type textures)."
     tools:
       - execute_blender_code
-    steps:
-      - Create the material and assign it to the target object.
-      - Build the node graph.
-      - Verify with a viewport look.
-  - name: camera_lighting
-    description: "Place cameras and lights and set the world environment."
-    tools:
-      - execute_blender_code
-    steps:
-      - Add or adjust the camera and lights.
-      - Set exposure and world settings.
-      - Verify the framing with a viewport look.
-  - name: rig_animate
-    description: "Rig objects with armatures and animate actions and keyframes."
-    tools:
-      - execute_blender_code
-    steps:
-      - Build the armature and parent the mesh.
-      - Pose and keyframe the action.
-      - Verify the motion with a viewport look.
-  - name: review_viewport
-    description: "Review the scene with viewport screenshots."
-    tools:
       - look
     steps:
-      - Capture the viewport for the result.
-      - Inspect the image and iterate on the scene.
+      - do: "Create the material with nodes and assign it to the target object."
+        tool: execute_blender_code
+        args: '{"code": "import bpy\nobj = bpy.data.objects[\"Crate\"]\nmat = bpy.data.materials.new(\"CrateWood\")\nmat.use_nodes = True\nbsdf = mat.node_tree.nodes[\"Principled BSDF\"]\nbsdf.inputs[\"Base Color\"].default_value = (0.45, 0.28, 0.12, 1.0)\nbsdf.inputs[\"Roughness\"].default_value = 0.6\nobj.data.materials.clear()\nobj.data.materials.append(mat)\nprint([m.name for m in obj.data.materials])"}'
+        check: "The printed list contains the new material name."
+      - do: "Build or adjust the node graph (textures, mix, bump) with further small scripts."
+        tool: execute_blender_code
+        args: '{"code": "import bpy\nmat = bpy.data.materials[\"CrateWood\"]\nprint([n.name for n in mat.node_tree.nodes])"}'
+        check: "The printed node names include every node you intended to add, and links are listed when you print `mat.node_tree.links`."
+      - do: "Verify with a rendered look at the object."
+        tool: look
+        args: '{"mode": "angles", "target": ["Crate"], "shading": "rendered", "max_size": 512}'
+        check: "The returned image shows the material on the object under the scene lighting. If it is black or pink, see recovery."
+    recovery:
+      - symptom: "The object renders pink or black"
+        cause: "A texture image is missing or a node input is not connected"
+        fix: "Print `[(n.name, n.type) for n in mat.node_tree.nodes]` and the links; reconnect the input, or replace the missing image with a flat color."
+      - symptom: "The material is created but not visible on the object"
+        cause: "It was never appended to the object's material slots, or the viewport shading is solid"
+        fix: "Append it to `obj.data.materials` and use `shading: material` or `rendered` in the look."
+      - symptom: "A material disappears after saving"
+        cause: "It has no user (not assigned)"
+        fix: "Assign it to an object or set `mat.use_fake_user = True`."
+
+  - name: camera_lighting
+    description: "Place cameras and lights and set the world environment."
+    use_when: "Adding or aiming a camera, adding lights, setting exposure or the world background, or choosing the render engine and device."
+    not_for: "Importing an HDRI from a library (use blender-assets with polyhaven hdris) or inspecting without changing (use blender-inspect-scene)."
+    tools:
+      - execute_blender_code
+      - look
+    steps:
+      - do: "Add or adjust the camera and make it the scene camera."
+        tool: execute_blender_code
+        args: '{"code": "import bpy, math\ncam_data = bpy.data.cameras.new(\"MainCam\")\ncam = bpy.data.objects.new(\"MainCam\", cam_data)\nbpy.context.scene.collection.objects.link(cam)\ncam.location = (4.0, -4.0, 2.5)\ncam.rotation_euler = (math.radians(65), 0, math.radians(45))\nbpy.context.scene.camera = cam\nprint(bpy.context.scene.camera.name)"}'
+        check: "The printed name equals the camera you created and `scene.camera` points at it."
+      - do: "Add lights and set the world and exposure; select GPU rendering when the host has one."
+        tool: execute_blender_code
+        args: '{"code": "import bpy\nlight = bpy.data.lights.new(\"Key\", type=\"AREA\")\nlight.energy = 800\nobj = bpy.data.objects.new(\"Key\", light)\nbpy.context.scene.collection.objects.link(obj)\nobj.location = (3, -2, 4)\nsc = bpy.context.scene\nsc.render.engine = \"CYCLES\"\nsc.cycles.device = \"GPU\"\nprint(sc.render.engine, sc.cycles.device)"}'
+        check: "The printed engine and device match what you set. If the host has no usable GPU, the device falls back to CPU at render time."
+      - do: "Verify the framing through the camera."
+        tool: look
+        args: '{"mode": "camera", "shading": "rendered", "max_size": 768}'
+        check: "The subject is inside the frame and exposed neither black nor blown out; adjust and look again."
+    recovery:
+      - symptom: "The camera view is black"
+        cause: "No light and a dark world, or the camera is inside an object"
+        fix: "Add a light or raise the world strength (`bpy.context.scene.world.node_tree.nodes['Background'].inputs[1].default_value`), and move the camera outside the geometry."
+      - symptom: "`look` with `mode: camera` fails"
+        cause: "`scene.camera` is not set"
+        fix: "Assign `bpy.context.scene.camera` in a script, then look again."
+      - symptom: "Rendering is slow or Cycles reports no GPU"
+        cause: "No compute device is enabled in Blender's Cycles preferences"
+        fix: "Enable the CUDA devices in `bpy.context.preferences.addons['cycles'].preferences` (set `compute_device_type = 'CUDA'`, call `get_devices()`, set `use = True` on CUDA devices), or accept CPU rendering."
+
+  - name: rig_animate
+    description: "Rig objects with armatures and animate actions and keyframes."
+    use_when: "Creating an armature, parenting a mesh to bones, posing, setting keyframes or an action, or changing the frame range."
+    not_for: "Static scene layout (use blender-build-scene) or reviewing the motion only (use blender-review-viewport with frames)."
+    tools:
+      - execute_blender_code
+      - get_scene_info
+      - look
+    steps:
+      - do: "Build the armature and parent the mesh to it."
+        tool: execute_blender_code
+        args: '{"code": "import bpy\nbpy.ops.object.armature_add(location=(0, 0, 0))\narm = bpy.context.active_object\narm.name = \"Rig\"\nmesh = bpy.data.objects[\"Crate\"]\nmesh.parent = arm\nprint(arm.name, [b.name for b in arm.data.bones])"}'
+        check: "The printed bone list is not empty and the mesh's parent is the armature."
+      - do: "Pose the rig and keyframe the action."
+        tool: execute_blender_code
+        args: '{"code": "import bpy\nsc = bpy.context.scene\nobj = bpy.data.objects[\"Crate\"]\nsc.frame_start, sc.frame_end = 1, 48\nobj.location.z = 0.5\nobj.keyframe_insert(\"location\", frame=1)\nobj.location.z = 2.0\nobj.keyframe_insert(\"location\", frame=24)\nprint(obj.animation_data.action.name)"}'
+        check: "The printed action name exists and the frame range covers your keyframes."
+      - do: "Check rig health, then verify the motion with a strip of frames."
+        tool: get_scene_info
+        args: '{"root": "Rig", "fields": ["details", "weights", "animation"]}'
+        check: "No deform bones without vertices and no vertices without a deform bone."
+      - do: "Look at several frames."
+        tool: look
+        args: '{"mode": "frames", "frame_count": 6, "shading": "solid", "max_size": 512}'
+        check: "The strip shows the motion progressing across the frame range."
+    recovery:
+      - symptom: "The mesh does not follow the bones"
+        cause: "Parenting without an armature modifier or vertex weights"
+        fix: "Parent with automatic weights (`bpy.ops.object.parent_set(type='ARMATURE_AUTO')` with the mesh selected and the armature active) and re-check `weights` in `get_scene_info`."
+      - symptom: "Keyframes do not appear"
+        cause: "The property was changed but never keyed, or the frame range excludes the key"
+        fix: "Call `keyframe_insert` after each change and set `scene.frame_start` and `frame_end`."
+      - symptom: "A pose operator fails"
+        cause: "Pose Mode is required"
+        fix: "Switch with `bpy.ops.object.mode_set(mode='POSE')` with the armature active, or set `pose.bones[...]` values directly."
+
+  - name: review_viewport
+    description: "Review the scene with viewport screenshots."
+    use_when: "Seeing the scene or an object as an image: a quick check after an edit, multiple angles, the camera framing, or frames across an animation."
+    not_for: "Exact numbers such as sizes, counts or positions (use blender-inspect-scene)."
+    tools:
+      - look
+      - get_scene_info
+    steps:
+      - do: "Capture the viewport at a small size for a quick check."
+        tool: look
+        args: '{"mode": "viewport", "shading": "solid", "max_size": 512}'
+        check: "An image is returned that shows the area you edited."
+      - do: "Look at the target from several sides."
+        tool: look
+        args: '{"mode": "angles", "target": ["Crate"], "views": ["front", "right", "top", "three_quarter"], "shading": "rendered", "max_size": 512}'
+        check: "One tile per requested view; the object is centered and fully visible in each."
+      - do: "Inspect the image and iterate: if it is wrong, change the scene and look again; if numbers are needed, read them."
+        tool: get_scene_info
+        args: '{"query": "Crate", "fields": ["placement", "size"]}'
+        check: "The numbers agree with what the image shows."
+    recovery:
+      - symptom: "The image is empty or shows the wrong area"
+        cause: "The target names do not exist or the viewport is not looking at the scene"
+        fix: "List object names with `get_scene_info`, pass them in `target` exactly, or omit `target` to frame everything visible."
+      - symptom: "The rendered look takes too long"
+        cause: "Many views with Cycles"
+        fix: "Use `shading: solid` or `material` (instant), fewer `views`, or a smaller `max_size`."
+      - symptom: "The look is too small to judge detail"
+        cause: "`max_size` defaults to 768 pixels"
+        fix: "Raise `max_size` for one detail look and lower `distance` to frame closer."
+
   - name: assets
     description: "Search and import library assets into the scene."
+    use_when: "Using an existing asset: an HDRI for the world, a PBR texture set, or a model from Poly Haven, Sketchfab or Poly Pizza."
+    not_for: "Creating a new model from a prompt (use blender-generative-3d) or modeling by script (use blender-build-scene)."
     tools:
+      - get_addon_status
       - search_assets
       - import_asset
     steps:
-      - Search the asset library.
-      - Import the chosen asset into the scene.
+      - do: "Confirm which libraries are switched on."
+        tool: get_addon_status
+        args: "{}"
+        check: "The `libraries` list shows the source you want as on; if off, tell the user to switch it on in Blender and do not guess another source silently."
+      - do: "Search the library with plain words."
+        tool: search_assets
+        args: '{"source": "polyhaven", "query": "wooden chair", "asset_type": "models", "limit": 5}'
+        check: "Results with ids; pick one by licence and size. Sketchfab licences vary per model; Poly Pizza CC-BY needs credit."
+      - do: "Import the chosen asset at a stated real-world size."
+        tool: import_asset
+        args: '{"source": "polyhaven", "id": "<id from search>", "asset_type": "models", "target_size": 1.0, "resolution": "1k"}'
+        check: "The reply names the imported object; confirm it with `get_scene_info` (query by name) and the size matches `target_size`."
+    recovery:
+      - symptom: "A Poly Haven import freezes Blender for a while"
+        cause: "Assets download on Blender's main thread and size grows about fourfold per resolution step"
+        fix: "Ask for `1k` or `2k` unless the asset is close to the camera."
+      - symptom: "The texture material is created but not visible"
+        cause: "`apply_to` was not given for a texture import"
+        fix: "Import again with `apply_to` set to the object names; an unused material is lost when the file is saved."
+      - symptom: "A Poly Pizza download fails with a bot challenge"
+        cause: "The CDN blocks datacenter and VPN addresses"
+        fix: "Retry from a normal connection, or import the .glb by hand with File > Import > glTF 2.0."
+      - symptom: "`import_asset` rejects the call"
+        cause: "A required argument is missing (`asset_type` for Poly Haven, `target_size` for Sketchfab)"
+        fix: "Add the missing argument named in the error and retry once."
+
   - name: generative_3d
     description: "Generate 3D content from text or images; these operations may cost credits."
+    use_when: "The user asks for a new textured model from a prompt or image, or for a generated environment as Gaussian splats."
+    not_for: "Ordinary scene building, ground, rooms or backdrops you can model or find (use blender-build-scene or blender-assets). Do not generate repeats: duplicate the first object instead."
     tools:
+      - get_addon_status
       - generate_3d
       - generate_gaussian_world
+      - get_scene_info
     steps:
-      - Describe the target model or world.
-      - Run the generation and wait for progress.
-      - Inspect the result and integrate it into the scene.
+      - do: "Confirm a generator is switched on and get the user's approval for the cost."
+        tool: get_addon_status
+        args: "{}"
+        check: "`generators` (or `worlds`) lists a provider as on, and the user has agreed to a billable generation."
+      - do: "Describe one object (or one world) and start the generation."
+        tool: generate_3d
+        args: '{"prompt": "a weathered wooden barrel", "name": "Barrel", "wait_seconds": 45}'
+        check: "Either the object is imported, or you receive a job handle."
+      - do: "If a job handle came back, call again with the job until it finishes."
+        tool: generate_3d
+        args: '{"job": "<job handle>", "name": "Barrel"}'
+        check: "The object is imported; repeating a request whose job is unfinished resumes it rather than paying again."
+      - do: "Inspect the result and integrate it (scale, place, ground)."
+        tool: get_scene_info
+        args: '{"query": "Barrel", "fields": ["placement", "size", "ground"]}'
+        check: "Size and orientation are plausible; fix with a `blender_execute_blender_code` step."
+    recovery:
+      - symptom: "No generator is available"
+        cause: "No provider key or Premium access is configured in the add-on"
+        fix: "Report which providers `blender_get_addon_status` lists and ask the user to enable one in the add-on preferences; do not retry."
+      - symptom: "The call returns a job handle instead of a model"
+        cause: "Generation takes 1-3 minutes and a call waits at most 45 seconds"
+        fix: "Call the same tool again with `job` and the same `name`."
+      - symptom: "The imported object is the wrong size or facing"
+        cause: "Generated models arrive at arbitrary scale and facing"
+        fix: "Set `obj.dimensions` and rotation with a `blender_execute_blender_code` step and verify with `blender_look`."
+      - symptom: "`generate_gaussian_world` fails"
+        cause: "It needs Blender 5.3 or newer"
+        fix: "Report the Blender version from `blender_get_addon_status`; do not retry on an older Blender."
+
   - name: session_controls
     description: "Session maintenance: telemetry opt-out and trajectory feedback."
+    use_when: "The user asks to stop data collection, or reacts to a result (accept, reject, undo, correction)."
+    not_for: "Any scene work, and never to turn telemetry back on: only the user can do that in Blender preferences."
     tools:
       - disable_telemetry
       - record_trajectory_feedback
     steps:
-      - Disable telemetry for the session when required.
-      - Record trajectory feedback as the workflow needs.
+      - do: "Disable telemetry for the session when the user asks."
+        tool: disable_telemetry
+        args: '{"user_prompt": "<the user words, verbatim>"}'
+        check: "The reply confirms collection is off; `blender_get_addon_status` shows `telemetry_consent` off."
+      - do: "Record the user's reaction to a result as feedback."
+        tool: record_trajectory_feedback
+        args: '{"feedback": "correction", "correction_text": "too dark"}'
+        check: "The reply confirms the feedback row was recorded for the last step."
+    recovery:
+      - symptom: "Telemetry still reports on"
+        cause: "The preference was changed in Blender after the call"
+        fix: "Call `blender_disable_telemetry` again and read `telemetry_consent` from `blender_get_addon_status`."
+      - symptom: "Feedback is rejected"
+        cause: "`feedback` is not one of accept, reject, undo, correction"
+        fix: "Use exactly one of those values and put the user's words in `correction_text`."
+
+# One operator prompt plus one prompt per role. Each is a full agent
+# definition: role, tools, skills, data locations, guardrails, outputs.
+roles:
+  - name: operator
+    title: Blender operator
+    goal: "Operate a live Blender session end to end through the blender_* tools: inspect, build, look, import and generate, and report every change."
+    functionalities:
+      - inspect_scene
+      - build_scene
+      - materials
+      - camera_lighting
+      - rig_animate
+      - review_viewport
+      - assets
+      - generative_3d
+      - session_controls
+    reads:
+      - scene
+      - asset_libraries
+      - renders
+    writes:
+      - scene
+    approval_required:
+      - blender_generate_3d
+      - blender_generate_gaussian_world
+      - blender_execute_blender_code
+    never:
+      - "Run a script before the .blend file is saved or the user has said it is safe."
+      - "Turn safe mode off or work around a blocked script."
+      - "Start a billable generation without the user's approval and an inspected provider list."
+      - "Claim a scene change worked without a check from blender_get_scene_info or blender_look."
+    outputs:
+      - "A summary of each step: the tool called, the check that passed, and the scene state afterwards."
+  - name: scene_builder
+    title: Blender scene builder
+    goal: "Lay out a scene with objects and library assets at correct real-world scale, and prove the layout with numbers and images."
+    functionalities:
+      - inspect_scene
+      - build_scene
+      - assets
+      - review_viewport
+    reads:
+      - scene
+      - asset_libraries
+    writes:
+      - scene
+    approval_required:
+      - blender_execute_blender_code
+    never:
+      - "Import an asset without checking its licence and size."
+      - "Leave an object floating or below the ground without saying so."
+    outputs:
+      - "The object list with names, sizes and placement, and the angles look used to verify it."
+  - name: lookdev_lighting_artist
+    title: Blender look-dev and lighting artist
+    goal: "Make the scene read well: materials, lights, world and camera framing, verified with rendered looks."
+    functionalities:
+      - materials
+      - camera_lighting
+      - review_viewport
+    reads:
+      - scene
+      - renders
+    writes:
+      - scene
+    approval_required:
+      - blender_execute_blender_code
+    never:
+      - "Change geometry while adjusting look and lighting."
+      - "Leave a material unassigned or a scene without a camera."
+    outputs:
+      - "The materials, lights and camera set, with the rendered look that confirms each."
+  - name: technical_animator
+    title: Blender technical animator
+    goal: "Rig objects and animate them, then prove the motion across the frame range."
+    functionalities:
+      - build_scene
+      - rig_animate
+      - review_viewport
+    reads:
+      - scene
+    writes:
+      - scene
+    approval_required:
+      - blender_execute_blender_code
+    never:
+      - "Change the frame range or delete keyframes without saying so."
+      - "Report motion as done without a frames look."
+    outputs:
+      - "The rig, the action name, the frame range and the frames look that shows the motion."

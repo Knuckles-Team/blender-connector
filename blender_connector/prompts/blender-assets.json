@@ -2,7 +2,7 @@
   "task": "blender-assets",
   "type": "prompt",
   "schema_version": "1.0",
-  "prompt_version": "0.1.0",
+  "prompt_version": "0.2.0",
   "source": "blender-connector",
   "description": "Search and import library assets into the scene.",
   "metadata": {
@@ -19,15 +19,20 @@
     ]
   },
   "instructions": {
-    "core_directive": "Use only the blender upstream of the blender-connector connector. The namespace `blender` is active by default; if the operator set lazy activation, activate it with registry_activate first. Every tool below is namespaced blender_<tool>. Work through these tools in order: `blender_search_assets`, `blender_import_asset`. Steps: (1) Search the asset library. (2) Import the chosen asset into the scene. Report a refusal payload when a tool refuses; never retry past a refusal.",
+    "core_directive": "Use only the blender upstream of the blender-connector connector. The namespace `blender` is active by default; if the operator set lazy activation, activate it with registry_activate first. Every tool below is namespaced blender_<tool>. Call `handshake` first and stop with a recovery report when it is not ready. Save the .blend file before running code. Use this when: Using an existing asset: an HDRI for the world, a PBR texture set, or a model from Poly Haven, Sketchfab or Poly Pizza. Do not use it for: Creating a new model from a prompt (use blender-generative-3d) or modeling by script (use blender-build-scene). Tools: `blender_get_addon_status`, `blender_search_assets`, `blender_import_asset`. Steps, each with one objective and a check you must pass before the next: (1) Confirm which libraries are switched on. Call `blender_get_addon_status`. Check: The `libraries` list shows the source you want as on; if off, tell the user to switch it on in Blender and do not guess another source silently. (2) Search the library with plain words. Call `blender_search_assets`. Check: Results with ids; pick one by licence and size. Sketchfab licences vary per model; Poly Pizza CC-BY needs credit. (3) Import the chosen asset at a stated real-world size. Call `blender_import_asset`. Check: The reply names the imported object; confirm it with `get_scene_info` (query by name) and the size matches `target_size`. On failure follow the recovery table of the skill `blender-assets`; report a refusal payload when a tool refuses and never retry past a refusal.",
     "quality_checklist": [
-      "the blender namespace was available before the first tool call",
+      "the blender namespace was available and handshake was ready before the first tool call",
+      "every step's check passed before the next step ran",
       "every tool named in this prompt exists in the upstream snapshot",
       "refusals are reported to the operator, never retried silently"
     ]
   },
-  "skills": [],
+  "skills": [
+    "blender",
+    "blender-assets"
+  ],
   "tools": [
+    "blender_get_addon_status",
     "blender_search_assets",
     "blender_import_asset"
   ],

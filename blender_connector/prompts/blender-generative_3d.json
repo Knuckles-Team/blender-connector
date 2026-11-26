@@ -2,7 +2,7 @@
   "task": "blender-generative_3d",
   "type": "prompt",
   "schema_version": "1.0",
-  "prompt_version": "0.1.0",
+  "prompt_version": "0.2.0",
   "source": "blender-connector",
   "description": "Generate 3D content from text or images; these operations may cost credits.",
   "metadata": {
@@ -19,17 +19,23 @@
     ]
   },
   "instructions": {
-    "core_directive": "Use only the blender upstream of the blender-connector connector. The namespace `blender` is active by default; if the operator set lazy activation, activate it with registry_activate first. Every tool below is namespaced blender_<tool>. Work through these tools in order: `blender_generate_3d`, `blender_generate_gaussian_world`. Steps: (1) Describe the target model or world. (2) Run the generation and wait for progress. (3) Inspect the result and integrate it into the scene. Report a refusal payload when a tool refuses; never retry past a refusal.",
+    "core_directive": "Use only the blender upstream of the blender-connector connector. The namespace `blender` is active by default; if the operator set lazy activation, activate it with registry_activate first. Every tool below is namespaced blender_<tool>. Call `handshake` first and stop with a recovery report when it is not ready. Save the .blend file before running code. Use this when: The user asks for a new textured model from a prompt or image, or for a generated environment as Gaussian splats. Do not use it for: Ordinary scene building, ground, rooms or backdrops you can model or find (use blender-build-scene or blender-assets). Do not generate repeats: duplicate the first object instead. Tools: `blender_get_addon_status`, `blender_generate_3d`, `blender_generate_gaussian_world`, `blender_get_scene_info`. Steps, each with one objective and a check you must pass before the next: (1) Confirm a generator is switched on and get the user's approval for the cost. Call `blender_get_addon_status`. Check: `generators` (or `worlds`) lists a provider as on, and the user has agreed to a billable generation. (2) Describe one object (or one world) and start the generation. Call `blender_generate_3d`. Check: Either the object is imported, or you receive a job handle. (3) If a job handle came back, call again with the job until it finishes. Call `blender_generate_3d`. Check: The object is imported; repeating a request whose job is unfinished resumes it rather than paying again. (4) Inspect the result and integrate it (scale, place, ground). Call `blender_get_scene_info`. Check: Size and orientation are plausible; fix with a `blender_execute_blender_code` step. On failure follow the recovery table of the skill `blender-generative-3d`; report a refusal payload when a tool refuses and never retry past a refusal.",
     "quality_checklist": [
-      "the blender namespace was available before the first tool call",
+      "the blender namespace was available and handshake was ready before the first tool call",
+      "every step's check passed before the next step ran",
       "every tool named in this prompt exists in the upstream snapshot",
       "refusals are reported to the operator, never retried silently"
     ]
   },
-  "skills": [],
+  "skills": [
+    "blender",
+    "blender-generative-3d"
+  ],
   "tools": [
+    "blender_get_addon_status",
     "blender_generate_3d",
-    "blender_generate_gaussian_world"
+    "blender_generate_gaussian_world",
+    "blender_get_scene_info"
   ],
   "requires_namespace": "blender"
 }

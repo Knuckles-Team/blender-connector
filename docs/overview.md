@@ -3,7 +3,7 @@
 `blender-connector` is the Arbora-ecosystem connector for Blender. It is a
 single MCP server that:
 
-1. **Proxies the upstream** — the `blender-mcp` binary (the community
+1. **Proxies the upstream** — the `mcp-for-blender` binary (the community
    `mcp-for-blender` project) runs as a pooled stdio child of this server.
    Every upstream tool is served as `blender_<tool>`, tagged `ns:blender`,
    with the `scion/upstream` metadata; the upstream's resources pass

@@ -12,7 +12,7 @@ The connector declares one upstream and the SDK registry serves it. This plan co
 - **Primary Dependencies**: scion-sdk with the `mcp` extra, which pins the MCP framework; PyYAML for the authored source
 - **Storage**: N/A; the connector stores nothing, and generated content is committed files
 - **Testing**: pytest with a fixture upstream binary on `PATH`; the live gate is opt-in
-- **Target Platform**: Linux developer hosts that carry the `blender-mcp` binary
+- **Target Platform**: Linux developer hosts that carry the `mcp-for-blender` binary
 - **Project Type**: connector (MCP server)
 - **Performance Goals**: N/A
 - **Constraints**: the SDK owns the registry, the lifecycle and the drift check; the connector reimplements none of them
@@ -52,6 +52,14 @@ Unknowns settled during the build:
 
 ## Phase 1: Design
 
+- **Owner:** this connector owns the Blender upstream declaration, the native readiness tool and the probe. The SDK owns the registry; the upstream owns every Blender action.
+- **Cohesion:** one module holds the declaration and the environment reads (`upstreams.py`), one holds the native tool (`mcp/`), one the probe (`probe.py`).
+- **Dependency direction:** the connector depends on the SDK only and reaches Blender only through the upstream child. It never opens its own socket to Blender.
+- **Interface depth:** one declaration hides the pool, the namespace and the drift check behind the SDK.
+- **Special cases:** a missing upstream binary marks only the `blender` upstream unavailable; a stopped add-on makes the upstream return its own timeout text.
+- **State:** none. The connector stores nothing; the scene lives in the running Blender.
+- **Environment:** `BLENDER_HOST`, `BLENDER_PORT`, `DISABLE_TELEMETRY`, `BLENDER_MCP_SAFE_MODE` and `SCION_UPSTREAMS_INHERIT_ENV`.
+
 ### Existing system and reuse
 
 The SDK registry owns the proxy, the namespace, the activation tools, the stdio pool, the health report, the elicitation pass-through and the drift check. This connector adds data, not mechanisms: one declaration, one native tool, one probe, one example overlay.
@@ -62,7 +70,7 @@ Namespacing: `blender_<tool>`, one lowercase word for the app. The native tool c
 
 Activation: `active` in the declaration. The ten proxied tools carry no activation pressure, so the first list holds the full surface. An operator may still set lazy activation per deployment.
 
-Environment: the child environment is clean by construction. The shipped whitelist `PATH,HOME,LANG,DISABLE_TELEMETRY,BLENDER_HOST,BLENDER_PORT` is the only way the telemetry opt-out and the socket address reach the upstream.
+Environment: the child environment is clean by construction. The shipped whitelist `PATH,HOME,LANG,DISABLE_TELEMETRY,BLENDER_HOST,BLENDER_PORT,BLENDER_MCP_SAFE_MODE` is the only way the telemetry opt-out and the socket address reach the upstream.
 
 Sandbox: an explicit empty grant. The upstream has no root flags, so both tuples are empty and no flag is ever passed.
 

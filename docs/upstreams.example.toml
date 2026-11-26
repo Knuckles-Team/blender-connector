@@ -9,7 +9,7 @@
 # placeholders from an unresolvable domain; replace them before use.
 #
 # The default deployment stays stdio: the connector starts the local
-# blender-mcp binary as a pooled child. This overlay is for the day a
+# mcp-for-blender binary as a pooled child. This overlay is for the day a
 # remote host serves the surface over HTTP.
 
 [[upstream]]

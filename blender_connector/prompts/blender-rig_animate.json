@@ -2,7 +2,7 @@
   "task": "blender-rig_animate",
   "type": "prompt",
   "schema_version": "1.0",
-  "prompt_version": "0.1.0",
+  "prompt_version": "0.2.0",
   "source": "blender-connector",
   "description": "Rig objects with armatures and animate actions and keyframes.",
   "metadata": {
@@ -19,16 +19,22 @@
     ]
   },
   "instructions": {
-    "core_directive": "Use only the blender upstream of the blender-connector connector. The namespace `blender` is active by default; if the operator set lazy activation, activate it with registry_activate first. Every tool below is namespaced blender_<tool>. Work through these tools in order: `blender_execute_blender_code`. Steps: (1) Build the armature and parent the mesh. (2) Pose and keyframe the action. (3) Verify the motion with a viewport look. Report a refusal payload when a tool refuses; never retry past a refusal.",
+    "core_directive": "Use only the blender upstream of the blender-connector connector. The namespace `blender` is active by default; if the operator set lazy activation, activate it with registry_activate first. Every tool below is namespaced blender_<tool>. Call `handshake` first and stop with a recovery report when it is not ready. Save the .blend file before running code. Use this when: Creating an armature, parenting a mesh to bones, posing, setting keyframes or an action, or changing the frame range. Do not use it for: Static scene layout (use blender-build-scene) or reviewing the motion only (use blender-review-viewport with frames). Tools: `blender_execute_blender_code`, `blender_get_scene_info`, `blender_look`. Steps, each with one objective and a check you must pass before the next: (1) Build the armature and parent the mesh to it. Call `blender_execute_blender_code`. Check: The printed bone list is not empty and the mesh's parent is the armature. (2) Pose the rig and keyframe the action. Call `blender_execute_blender_code`. Check: The printed action name exists and the frame range covers your keyframes. (3) Check rig health, then verify the motion with a strip of frames. Call `blender_get_scene_info`. Check: No deform bones without vertices and no vertices without a deform bone. (4) Look at several frames. Call `blender_look`. Check: The strip shows the motion progressing across the frame range. On failure follow the recovery table of the skill `blender-rig-animate`; report a refusal payload when a tool refuses and never retry past a refusal.",
     "quality_checklist": [
-      "the blender namespace was available before the first tool call",
+      "the blender namespace was available and handshake was ready before the first tool call",
+      "every step's check passed before the next step ran",
       "every tool named in this prompt exists in the upstream snapshot",
       "refusals are reported to the operator, never retried silently"
     ]
   },
-  "skills": [],
+  "skills": [
+    "blender",
+    "blender-rig-animate"
+  ],
   "tools": [
-    "blender_execute_blender_code"
+    "blender_execute_blender_code",
+    "blender_get_scene_info",
+    "blender_look"
   ],
   "requires_namespace": "blender"
 }

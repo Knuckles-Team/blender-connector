@@ -37,7 +37,7 @@ from blender_connector.content_gen.prompts import (
     render_prompts,
     unassigned_tools,
 )
-from blender_connector.content_gen.skill import render_skill
+from blender_connector.content_gen.skill import render_skills
 from blender_connector.content_gen.sources import (
     BlenderSource,
     ToolInfo,
@@ -64,7 +64,7 @@ def _write(path: Path, text: str) -> None:
 def _committed_paths(source: BlenderSource, snapshot: ToolSnapshot) -> dict[str, str]:
     """File name to rendered text, for all three content kinds."""
     files: dict[str, str] = {}
-    files["skills/blender/SKILL.md"] = render_skill(source, snapshot)
+    files.update(render_skills(source, snapshot))
     files["ontology/blender.ttl"] = render_ontology(source, snapshot)
     files.update(
         {

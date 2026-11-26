@@ -25,7 +25,7 @@ def _declare_pinned(monkeypatch) -> None:
     decl = UpstreamDecl(
         name="blender",
         kind="stdio",
-        command="blender-mcp",
+        command="mcp-for-blender",
         activation="active",
         on_drift="warn",
         expected_fingerprint="0" * 64,

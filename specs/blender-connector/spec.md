@@ -8,7 +8,7 @@ The `blender-connector` server is the one MCP facade for Blender scene work. It 
 
 ## Why a new spec
 
-Search: `git grep -n "upstream\|blender-mcp\|overlay\|stdio" -- specs` in this repository. The content bundle `CONN-BLENDER-CONNECTOR-CONTENT` owns the packaged content only. No spec owns the upstream declaration, the probe, the deployment modes or the phase gates. The generic registry is an SDK capability and lives in `SCION-CONNECTOR-CONTROL-R914`. This spec holds no registry code.
+Search: `git grep -n "upstream\|mcp-for-blender\|overlay\|stdio" -- specs` in this repository. The content bundle `CONN-BLENDER-CONNECTOR-CONTENT` owns the packaged content only. No spec owns the upstream declaration, the probe, the deployment modes or the phase gates. The generic registry is an SDK capability and lives in `SCION-CONNECTOR-CONTROL-R914`. This spec holds no registry code.
 
 ## User Scenarios & Testing
 
@@ -27,7 +27,7 @@ An operator picks the deployment mode without changing code.
 
 **Acceptance Scenarios**:
 
-1. **Given** the default server, **When** it lists the upstream, **Then** it reaches the local `blender-mcp` binary with a clean child environment and telemetry off (`CONN-BLENDER-CONNECTOR-R001`, `CONN-BLENDER-CONNECTOR-R004`).
+1. **Given** the default server, **When** it lists the upstream, **Then** it reaches the local `mcp-for-blender` binary with a clean child environment and telemetry off (`CONN-BLENDER-CONNECTOR-R001`, `CONN-BLENDER-CONNECTOR-R004`).
 2. **Given** an overlay file for a remote host, **When** the server starts, **Then** the upstream is reached over HTTP with a credential reference and a TLS profile name (`CONN-BLENDER-CONNECTOR-R005`).
 
 ### User Story 3 - Keep the surface honest across upstream updates (Priority: P2)
@@ -36,7 +36,7 @@ A maintainer updates the upstream and sees what changed before the next client h
 
 **Acceptance Scenarios**:
 
-1. **Given** an updated `blender-mcp` binary, **When** the operator runs the probe, **Then** it reports the version and the tool count, or a typed code when the binary no longer answers (`CONN-BLENDER-CONNECTOR-R003`).
+1. **Given** an updated `mcp-for-blender` binary, **When** the operator runs the probe, **Then** it reports the version and the tool count, or a typed code when the binary no longer answers (`CONN-BLENDER-CONNECTOR-R003`).
 2. **Given** a changed tool list, **When** the live gate runs, **Then** it names the stale tools (`CONN-BLENDER-CONNECTOR-R010`).
 
 ### User Story 4 - Load the blender group behind the gateway (Priority: P3)
@@ -75,7 +75,7 @@ A gateway user loads and unloads the Blender tools as one group.
 
 ## Assumptions
 
-- The upstream binary `blender-mcp` (the `mcp-for-blender` project) is available on the operator host through `uv tool install blender-mcp`.
+- The upstream binary `mcp-for-blender` (the `mcp-for-blender` project) is available on the operator host through `uv tool install mcp-for-blender`.
 - The surface served to a plain MCP client holds ten tools. The upstream's app-extension-only tools (the viewport app surface and mention search) are not part of that surface and are not in the committed snapshot; a client with app support is a snapshot refresh plus a source extension, gated by the drift checks.
 - The SDK registry rows (`SCION-CONNECTOR-CONTROL-R914`) land before the rows here that depend on them; scion-sdk 0.7.1 from PyPI satisfies them.
 - No official Blender MCP is verifiable from the build host. The wrapped upstream is the popular third-party `mcp-for-blender`, recorded in the scope document.

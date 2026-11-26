@@ -4,7 +4,7 @@ Governing spec: [spec.md](spec.md).
 
 | Test ID | Requirement | Proving test | Expected observation |
 |---|---|---|---|
-| T-001 | `CONN-BLENDER-CONNECTOR-R001` | `tests/test_upstream_declarations.py::test_single_stdio_declaration` | One declaration exists with the pinned shape: stdio, command `blender-mcp`, an explicit empty sandbox grant, `activation` `active` and `on_drift` `warn`. |
+| T-001 | `CONN-BLENDER-CONNECTOR-R001` | `tests/test_upstream_declarations.py::test_single_stdio_declaration` | One declaration exists with the pinned shape: stdio, command `mcp-for-blender`, an explicit empty sandbox grant, `activation` `active` and `on_drift` `warn`. |
 | T-001.1 | `CONN-BLENDER-CONNECTOR-R001` | `tests/test_upstream_declarations.py::test_inherit_env_default_carries_telemetry_and_socket` | The shipped environment whitelist names exactly `PATH`, `HOME`, `LANG`, `DISABLE_TELEMETRY`, `BLENDER_HOST` and `BLENDER_PORT`. |
 | T-002 | `CONN-BLENDER-CONNECTOR-R002` | `tests/test_tool_budget.py::test_initial_list_is_full_surface` | The first list holds exactly eight tools against the three-tool fixture: four registry tools, `handshake` and the three `blender_*` tools. `registry_status` reports `ready` with the fixture tool count. |
 | T-003 | `CONN-BLENDER-CONNECTOR-R003` | `tests/test_probe.py::test_probe_reports_the_fixture_upstream` | A fixture upstream reports `exposes_mcp` true with its version and tool count. |

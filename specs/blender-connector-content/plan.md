@@ -12,7 +12,7 @@ Governing spec: [spec.md](spec.md). Rows: [requirements.md](requirements.md).
 - **Primary Dependencies**: scion-sdk with the `mcp` extra; PyYAML for the authored source
 - **Storage**: N/A; the connector stores nothing, and generated content is committed files
 - **Testing**: pytest against the package directories; the live gate runs on a host with the binary
-- **Target Platform**: Linux developer hosts that carry the `blender-mcp` binary
+- **Target Platform**: Linux developer hosts that carry the `mcp-for-blender` binary
 - **Project Type**: connector (MCP server)
 - **Performance Goals**: N/A
 - **Constraints**: the renderers are pure functions; the generator is the only writer
@@ -39,9 +39,17 @@ content/snapshots/blender.tools.json        new       generated from the live to
 
 ## Phase 0: Research
 
-No unknowns. The pack rules are in `MEDULLA-TYPED-PACKS-R071.2`, `MEDULLA-TYPED-PACKS-R102.3` and `MEDULLA-TYPED-PACKS-R105`. The served surface facts are recorded in `CONN-BLENDER-CONNECTOR-R002`.
+Unknowns settled in `research.md`: the Agent Skill naming rule, the authored tool-use contract and the role prompt shape. The pack rules are in `MEDULLA-TYPED-PACKS-R071.2`, `MEDULLA-TYPED-PACKS-R102.3` and `MEDULLA-TYPED-PACKS-R105`. The served surface facts are recorded in `CONN-BLENDER-CONNECTOR-R002`.
 
 ## Phase 1: Design
+
+- **Owner:** this connector owns the authored source, the committed tool snapshot and the generated skills, prompts and ontology. The upstream owns the tools.
+- **Cohesion:** `content_gen/` holds one pure renderer per content kind (`skill`, `prompts`, `ontology`) and `sources` holds the parsers; the script only reads and writes files.
+- **Dependency direction:** renderers read the source and the snapshot and never import the server. The server serves the committed files by package convention.
+- **Interface depth:** one authored functionality renders a skill, a prompt and an ontology use case with its tool-use contract.
+- **Special cases:** a step that names a tool outside its functionality, or a tool outside the snapshot, refuses the render.
+- **State:** none beyond the committed snapshot and generated files; the drift gate compares bytes.
+- **Environment:** a host with the `mcp-for-blender` binary for `--refresh` and `--live`; `--write` and `--check` need none.
 
 ### Existing system and reuse
 
