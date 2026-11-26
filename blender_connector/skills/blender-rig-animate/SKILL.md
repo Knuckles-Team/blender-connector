@@ -48,7 +48,7 @@ Static scene layout (use blender-build-scene) or reviewing the motion only (use 
      {"code": "import bpy\nbpy.ops.object.armature_add(location=(0, 0, 0))\narm = bpy.context.active_object\narm.name = \"Rig\"\nmesh = bpy.data.objects[\"Crate\"]\nmesh.parent = arm\nprint(arm.name, [b.name for b in arm.data.bones])"}
      ```
 
-   - Check: The printed bone list is not empty and the mesh's parent is the armature.
+   - Verify: The printed bone list is not empty and the mesh's parent is the armature.
 2. **Pose the rig and keyframe the action.**
    - Tool: `blender_execute_blender_code`
    - Arguments:
@@ -57,8 +57,8 @@ Static scene layout (use blender-build-scene) or reviewing the motion only (use 
      {"code": "import bpy\nsc = bpy.context.scene\nobj = bpy.data.objects[\"Crate\"]\nsc.frame_start, sc.frame_end = 1, 48\nobj.location.z = 0.5\nobj.keyframe_insert(\"location\", frame=1)\nobj.location.z = 2.0\nobj.keyframe_insert(\"location\", frame=24)\nprint(obj.animation_data.action.name)"}
      ```
 
-   - Check: The printed action name exists and the frame range covers your keyframes.
-3. **Check rig health, then verify the motion with a strip of frames.**
+   - Verify: The printed action name exists and the frame range covers your keyframes.
+3. **Check rig health, and afterwards the motion with a strip of frames.**
    - Tool: `blender_get_scene_info`
    - Arguments:
 
@@ -66,7 +66,7 @@ Static scene layout (use blender-build-scene) or reviewing the motion only (use 
      {"root": "Rig", "fields": ["details", "weights", "animation"]}
      ```
 
-   - Check: No deform bones without vertices and no vertices without a deform bone.
+   - Verify: No deform bones without vertices and no vertices without a deform bone.
 4. **Look at several frames.**
    - Tool: `blender_look`
    - Arguments:
@@ -75,11 +75,11 @@ Static scene layout (use blender-build-scene) or reviewing the motion only (use 
      {"mode": "frames", "frame_count": 6, "shading": "solid", "max_size": 512}
      ```
 
-   - Check: The strip shows the motion progressing across the frame range.
+   - Verify: The strip shows the motion progressing across the frame range.
 
-## Error recovery
+## Failure recovery
 
-| Symptom | Likely cause | Fix |
+| Failure | Cause | Recovery |
 |---|---|---|
 | The mesh does not follow the bones | Parenting without an armature modifier or vertex weights | Parent with automatic weights (`bpy.ops.object.parent_set(type='ARMATURE_AUTO')` with the mesh selected and the armature active) and re-check `weights` in `get_scene_info`. |
 | Keyframes do not appear | The property was changed but never keyed, or the frame range excludes the key | Call `keyframe_insert` after each change and set `scene.frame_start` and `frame_end`. |

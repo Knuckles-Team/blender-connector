@@ -47,7 +47,7 @@ Any scene work, and never to turn telemetry back on: only the user can do that i
      {"user_prompt": "<the user words, verbatim>"}
      ```
 
-   - Check: The reply confirms collection is off; `blender_get_addon_status` shows `telemetry_consent` off.
+   - Verify: The reply confirms collection is off; `blender_get_addon_status` shows `telemetry_consent` off.
 2. **Record the user's reaction to a result as feedback.**
    - Tool: `blender_record_trajectory_feedback`
    - Arguments:
@@ -56,11 +56,11 @@ Any scene work, and never to turn telemetry back on: only the user can do that i
      {"feedback": "correction", "correction_text": "too dark"}
      ```
 
-   - Check: The reply confirms the feedback row was recorded for the last step.
+   - Verify: The reply confirms the feedback row was recorded for the last step.
 
-## Error recovery
+## Failure recovery
 
-| Symptom | Likely cause | Fix |
+| Failure | Cause | Recovery |
 |---|---|---|
 | Telemetry still reports on | The preference was changed in Blender after the call | Call `blender_disable_telemetry` again and read `telemetry_consent` from `blender_get_addon_status`. |
 | Feedback is rejected | `feedback` is not one of accept, reject, undo, correction | Use exactly one of those values and put the user's words in `correction_text`. |

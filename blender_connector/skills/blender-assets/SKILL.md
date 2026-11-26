@@ -48,7 +48,7 @@ Creating a new model from a prompt (use blender-generative-3d) or modeling by sc
      {}
      ```
 
-   - Check: The `libraries` list shows the source you want as on; if off, tell the user to switch it on in Blender and do not guess another source silently.
+   - Verify: The `libraries` list shows the source you want as on; if off, tell the user to switch it on in Blender and do not guess another source silently.
 2. **Search the library with plain words.**
    - Tool: `blender_search_assets`
    - Arguments:
@@ -57,7 +57,7 @@ Creating a new model from a prompt (use blender-generative-3d) or modeling by sc
      {"source": "polyhaven", "query": "wooden chair", "asset_type": "models", "limit": 5}
      ```
 
-   - Check: Results with ids; pick one by licence and size. Sketchfab licences vary per model; Poly Pizza CC-BY needs credit.
+   - Verify: Results with ids; pick one by licence and size. Sketchfab licences vary per model; Poly Pizza CC-BY needs credit.
 3. **Import the chosen asset at a stated real-world size.**
    - Tool: `blender_import_asset`
    - Arguments:
@@ -66,11 +66,11 @@ Creating a new model from a prompt (use blender-generative-3d) or modeling by sc
      {"source": "polyhaven", "id": "<id from search>", "asset_type": "models", "target_size": 1.0, "resolution": "1k"}
      ```
 
-   - Check: The reply names the imported object; confirm it with `get_scene_info` (query by name) and the size matches `target_size`.
+   - Verify: The reply names the imported object; confirm it with `get_scene_info` (query by name) and the size matches `target_size`.
 
-## Error recovery
+## Failure recovery
 
-| Symptom | Likely cause | Fix |
+| Failure | Cause | Recovery |
 |---|---|---|
 | A Poly Haven import freezes Blender for a while | Assets download on Blender's main thread and size grows about fourfold per resolution step | Ask for `1k` or `2k` unless the asset is close to the camera. |
 | The texture material is created but not visible | `apply_to` was not given for a texture import | Import again with `apply_to` set to the object names; an unused material is lost when the file is saved. |

@@ -44,7 +44,7 @@ def _cell(text: str) -> str:
 
 
 def _recovery_table(rows: tuple[Recovery, ...]) -> list[str]:
-    lines = ["| Symptom | Likely cause | Fix |", "|---|---|---|"]
+    lines = ["| Failure | Cause | Recovery |", "|---|---|---|"]
     for row in rows:
         lines.append(
             f"| {_cell(row.symptom)} | {_cell(row.cause)} | {_cell(row.fix)} |"
@@ -140,6 +140,21 @@ def render_skill(source: BlenderSource, snapshot: ToolSnapshot) -> str:
     lines += [
         "| `handshake` | Local readiness check: upstream binary and add-on socket. |"
     ]
+    lines += [
+        "",
+        "## Steps",
+        "",
+        "1. Check the connector with `handshake` and verify the reply says "
+        "`ready: true`.",
+        f"2. Confirm the namespace with `registry_status` and verify the "
+        f"`{app}` upstream is not `unavailable`.",
+        "3. Pick the `blender-<functionality>` skill that matches the request "
+        "from the table below and verify its name starts with `blender-`.",
+        f"4. Read before you change with `{app}_get_scene_info` and verify "
+        "the reply lists the objects the request names.",
+        "5. Run the chosen skill's `blender_*` tool calls in order and verify "
+        "each one against its own verify line before the next.",
+    ]
     if source.functionalities:
         lines += ["", "## Functionality skills", ""]
         lines += ["| Skill | Use it to |", "|---|---|"]
@@ -151,7 +166,7 @@ def render_skill(source: BlenderSource, snapshot: ToolSnapshot) -> str:
         lines += ["", "## Where the data lives", ""]
         lines += [f"- **{loc.name}**: {loc.where}" for loc in source.data_locations]
     if source.recovery:
-        lines += ["", "## Error recovery", ""]
+        lines += ["", "## Failure recovery", ""]
         lines += _recovery_table(source.recovery)
     lines.append("")
     return "\n".join(lines)
@@ -209,8 +224,8 @@ def render_functionality_skill(
                 "",
             ]
         if step.check:
-            lines.append(f"   - Check: {step.check}")
-    lines += ["", "## Error recovery", ""]
+            lines.append(f"   - Verify: {step.check}")
+    lines += ["", "## Failure recovery", ""]
     lines += _recovery_table(func.recovery + source.recovery[:3])
     lines += [
         "",

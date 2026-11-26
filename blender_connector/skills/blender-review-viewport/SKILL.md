@@ -47,7 +47,7 @@ Exact numbers such as sizes, counts or positions (use blender-inspect-scene).
      {"mode": "viewport", "shading": "solid", "max_size": 512}
      ```
 
-   - Check: An image is returned that shows the area you edited.
+   - Verify: An image is returned that shows the area you edited.
 2. **Look at the target from several sides.**
    - Tool: `blender_look`
    - Arguments:
@@ -56,8 +56,8 @@ Exact numbers such as sizes, counts or positions (use blender-inspect-scene).
      {"mode": "angles", "target": ["Crate"], "views": ["front", "right", "top", "three_quarter"], "shading": "rendered", "max_size": 512}
      ```
 
-   - Check: One tile per requested view; the object is centered and fully visible in each.
-3. **Inspect the image and iterate: if it is wrong, change the scene and look again; if numbers are needed, read them.**
+   - Verify: One tile per requested view; the object is centered and fully visible in each.
+3. **Inspect the image and iterate on the scene until it is right.**
    - Tool: `blender_get_scene_info`
    - Arguments:
 
@@ -65,11 +65,11 @@ Exact numbers such as sizes, counts or positions (use blender-inspect-scene).
      {"query": "Crate", "fields": ["placement", "size"]}
      ```
 
-   - Check: The numbers agree with what the image shows.
+   - Verify: The numbers agree with what the image shows. If the image is wrong, change the scene and look again; if numbers are needed, read them with this call.
 
-## Error recovery
+## Failure recovery
 
-| Symptom | Likely cause | Fix |
+| Failure | Cause | Recovery |
 |---|---|---|
 | The image is empty or shows the wrong area | The target names do not exist or the viewport is not looking at the scene | List object names with `get_scene_info`, pass them in `target` exactly, or omit `target` to frame everything visible. |
 | The rendered look takes too long | Many views with Cycles | Use `shading: solid` or `material` (instant), fewer `views`, or a smaller `max_size`. |

@@ -125,6 +125,8 @@ functionality:
       - get_scene_info
     steps:
       - do: "Plan the change in bpy terms and keep it to one small step: one object or one operation."
+        tool: get_scene_info
+        args: '{"fields": ["placement"], "limit": 20}'
         check: "You can state in one sentence what the script adds or changes, the object names it touches, and what it will print."
       - do: "Execute it in one bounded code block that prints what you need to know."
         tool: execute_blender_code
@@ -191,7 +193,7 @@ functionality:
         tool: execute_blender_code
         args: '{"code": "import bpy, math\ncam_data = bpy.data.cameras.new(\"MainCam\")\ncam = bpy.data.objects.new(\"MainCam\", cam_data)\nbpy.context.scene.collection.objects.link(cam)\ncam.location = (4.0, -4.0, 2.5)\ncam.rotation_euler = (math.radians(65), 0, math.radians(45))\nbpy.context.scene.camera = cam\nprint(bpy.context.scene.camera.name)"}'
         check: "The printed name equals the camera you created and `scene.camera` points at it."
-      - do: "Add lights and set the world and exposure; select GPU rendering when the host has one."
+      - do: "Add lights and set the world, exposure and render device (select GPU rendering when the host has one)."
         tool: execute_blender_code
         args: '{"code": "import bpy\nlight = bpy.data.lights.new(\"Key\", type=\"AREA\")\nlight.energy = 800\nobj = bpy.data.objects.new(\"Key\", light)\nbpy.context.scene.collection.objects.link(obj)\nobj.location = (3, -2, 4)\nsc = bpy.context.scene\nsc.render.engine = \"CYCLES\"\nsc.cycles.device = \"GPU\"\nprint(sc.render.engine, sc.cycles.device)"}'
         check: "The printed engine and device match what you set. If the host has no usable GPU, the device falls back to CPU at render time."
@@ -227,7 +229,7 @@ functionality:
         tool: execute_blender_code
         args: '{"code": "import bpy\nsc = bpy.context.scene\nobj = bpy.data.objects[\"Crate\"]\nsc.frame_start, sc.frame_end = 1, 48\nobj.location.z = 0.5\nobj.keyframe_insert(\"location\", frame=1)\nobj.location.z = 2.0\nobj.keyframe_insert(\"location\", frame=24)\nprint(obj.animation_data.action.name)"}'
         check: "The printed action name exists and the frame range covers your keyframes."
-      - do: "Check rig health, then verify the motion with a strip of frames."
+      - do: "Check rig health, and afterwards the motion with a strip of frames."
         tool: get_scene_info
         args: '{"root": "Rig", "fields": ["details", "weights", "animation"]}'
         check: "No deform bones without vertices and no vertices without a deform bone."
@@ -262,10 +264,10 @@ functionality:
         tool: look
         args: '{"mode": "angles", "target": ["Crate"], "views": ["front", "right", "top", "three_quarter"], "shading": "rendered", "max_size": 512}'
         check: "One tile per requested view; the object is centered and fully visible in each."
-      - do: "Inspect the image and iterate: if it is wrong, change the scene and look again; if numbers are needed, read them."
+      - do: "Inspect the image and iterate on the scene until it is right."
         tool: get_scene_info
         args: '{"query": "Crate", "fields": ["placement", "size"]}'
-        check: "The numbers agree with what the image shows."
+        check: "The numbers agree with what the image shows. If the image is wrong, change the scene and look again; if numbers are needed, read them with this call."
     recovery:
       - symptom: "The image is empty or shows the wrong area"
         cause: "The target names do not exist or the viewport is not looking at the scene"

@@ -47,7 +47,7 @@ Seeing the scene as an image (use blender-review-viewport) or changing anything 
      {}
      ```
 
-   - Check: The reply names the Blender version, says the add-on matches this server, and lists which libraries and generators are on. Anything else is a recovery row.
+   - Verify: The reply names the Blender version, says the add-on matches this server, and lists which libraries and generators are on. Anything else is a recovery row.
 2. **Read the scene inventory with the fields you need.**
    - Tool: `blender_get_scene_info`
    - Arguments:
@@ -56,7 +56,7 @@ Seeing the scene as an image (use blender-review-viewport) or changing anything 
      {"fields": ["placement", "contents"], "limit": 50}
      ```
 
-   - Check: A header line with object counts, then one line per object. An empty scene says so explicitly.
+   - Verify: A header line with object counts, then one line per object. An empty scene says so explicitly.
 3. **Narrow to one object or hierarchy when the inventory is long.**
    - Tool: `blender_get_scene_info`
    - Arguments:
@@ -65,11 +65,11 @@ Seeing the scene as an image (use blender-review-viewport) or changing anything 
      {"root": "Chair", "fields": ["placement", "materials", "modifiers", "topology"]}
      ```
 
-   - Check: Only that object and its children are listed, with the requested fields.
+   - Verify: Only that object and its children are listed, with the requested fields.
 
-## Error recovery
+## Failure recovery
 
-| Symptom | Likely cause | Fix |
+| Failure | Cause | Recovery |
 |---|---|---|
 | The inventory is truncated | More objects than `limit` | Raise `limit`, or filter with `query` (name contains) or `root` (one hierarchy). |
 | A field you need is not offered | `get_scene_info` covers placement, contents, health and settings only | Read it with `blender_execute_blender_code` and `print(...)` (see blender-build-scene). |

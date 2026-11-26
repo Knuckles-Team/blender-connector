@@ -34,9 +34,9 @@ def test_functionality_skill_shape(path: Path) -> None:
     assert "## When to use" in text and "## When NOT to use" in text
     steps = re.findall(r"^\d+\. \*\*", text, re.M)
     assert steps
-    checks = text.count("- Check:")
+    checks = text.count("- Verify:")
     assert checks >= len([s for s in steps if s])
-    assert "## Error recovery" in text and "| Symptom | Likely cause | Fix |" in text
+    assert "## Failure recovery" in text and "| Failure | Cause | Recovery |" in text
 
 
 def test_prompts_link_existing_skills() -> None:

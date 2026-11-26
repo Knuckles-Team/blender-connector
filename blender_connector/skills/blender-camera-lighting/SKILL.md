@@ -47,8 +47,8 @@ Importing an HDRI from a library (use blender-assets with polyhaven hdris) or in
      {"code": "import bpy, math\ncam_data = bpy.data.cameras.new(\"MainCam\")\ncam = bpy.data.objects.new(\"MainCam\", cam_data)\nbpy.context.scene.collection.objects.link(cam)\ncam.location = (4.0, -4.0, 2.5)\ncam.rotation_euler = (math.radians(65), 0, math.radians(45))\nbpy.context.scene.camera = cam\nprint(bpy.context.scene.camera.name)"}
      ```
 
-   - Check: The printed name equals the camera you created and `scene.camera` points at it.
-2. **Add lights and set the world and exposure; select GPU rendering when the host has one.**
+   - Verify: The printed name equals the camera you created and `scene.camera` points at it.
+2. **Add lights and set the world, exposure and render device (select GPU rendering when the host has one).**
    - Tool: `blender_execute_blender_code`
    - Arguments:
 
@@ -56,7 +56,7 @@ Importing an HDRI from a library (use blender-assets with polyhaven hdris) or in
      {"code": "import bpy\nlight = bpy.data.lights.new(\"Key\", type=\"AREA\")\nlight.energy = 800\nobj = bpy.data.objects.new(\"Key\", light)\nbpy.context.scene.collection.objects.link(obj)\nobj.location = (3, -2, 4)\nsc = bpy.context.scene\nsc.render.engine = \"CYCLES\"\nsc.cycles.device = \"GPU\"\nprint(sc.render.engine, sc.cycles.device)"}
      ```
 
-   - Check: The printed engine and device match what you set. If the host has no usable GPU, the device falls back to CPU at render time.
+   - Verify: The printed engine and device match what you set. If the host has no usable GPU, the device falls back to CPU at render time.
 3. **Verify the framing through the camera.**
    - Tool: `blender_look`
    - Arguments:
@@ -65,11 +65,11 @@ Importing an HDRI from a library (use blender-assets with polyhaven hdris) or in
      {"mode": "camera", "shading": "rendered", "max_size": 768}
      ```
 
-   - Check: The subject is inside the frame and exposed neither black nor blown out; adjust and look again.
+   - Verify: The subject is inside the frame and exposed neither black nor blown out; adjust and look again.
 
-## Error recovery
+## Failure recovery
 
-| Symptom | Likely cause | Fix |
+| Failure | Cause | Recovery |
 |---|---|---|
 | The camera view is black | No light and a dark world, or the camera is inside an object | Add a light or raise the world strength (`bpy.context.scene.world.node_tree.nodes['Background'].inputs[1].default_value`), and move the camera outside the geometry. |
 | `look` with `mode: camera` fails | `scene.camera` is not set | Assign `bpy.context.scene.camera` in a script, then look again. |
