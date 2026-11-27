@@ -47,6 +47,15 @@ A gateway user loads and unloads the Blender tools as one group.
 
 1. **Given** the connector is registered once, **When** the user loads the group `blender`, **Then** only the `blender_*` tools load (`CONN-BLENDER-CONNECTOR-R008`).
 
+### User Story 5 - Run the connector and Blender as published images (Priority: P2)
+
+An operator starts Blender with a virtual display and the connector next to it, from two published images or one compose file, with or without a GPU, and with the optional integrations on when their keys are mounted.
+
+**Acceptance Scenarios**:
+
+1. **Given** the two images and no GPU, **When** the compose bundle starts, **Then** the connector reports the add-on socket reachable and a rendered view returns (`CONN-BLENDER-CONNECTOR-R016`, `CONN-BLENDER-CONNECTOR-R018`).
+2. **Given** a mounted key for an integration, **When** Blender starts, **Then** that integration is on and the start-up report says so; **Given** no key, **Then** it stays off and the report says what is missing (`CONN-BLENDER-CONNECTOR-R015`).
+
 ### Edge Cases
 
 - The upstream binary is missing from `PATH`: the upstream is `unavailable` with a typed code and the server stays up (`CONN-BLENDER-CONNECTOR-R004`).
@@ -65,6 +74,9 @@ A gateway user loads and unloads the Blender tools as one group.
 - **FR-006**: Report drift instead of hiding it. Rows: `CONN-BLENDER-CONNECTOR-R007`.
 - **FR-007**: Register once and load the group behind the gateway. Rows: `CONN-BLENDER-CONNECTOR-R008`.
 - **FR-008**: Pass two acceptance gates. Rows: `CONN-BLENDER-CONNECTOR-R009`, `CONN-BLENDER-CONNECTOR-R010`.
+- **FR-009**: Publish the connector image and the Blender image from configuration. Rows: `CONN-BLENDER-CONNECTOR-R011`, `CONN-BLENDER-CONNECTOR-R012`.
+- **FR-010**: Select the display and the render device, and enable the integrations from configuration and mounted secrets. Rows: `CONN-BLENDER-CONNECTOR-R013`, `CONN-BLENDER-CONNECTOR-R014`, `CONN-BLENDER-CONNECTOR-R015`.
+- **FR-011**: Ship the compose bundle, the optional gated viewer, the image smoke job and the deployment guide. Rows: `CONN-BLENDER-CONNECTOR-R016`, `CONN-BLENDER-CONNECTOR-R017`, `CONN-BLENDER-CONNECTOR-R018`, `CONN-BLENDER-CONNECTOR-R019`.
 
 ## Success Criteria
 
@@ -72,6 +84,7 @@ A gateway user loads and unloads the Blender tools as one group.
 - **SC-002**: An unavailable upstream hides only its own proxied tools. Rows: `CONN-BLENDER-CONNECTOR-R004`.
 - **SC-003**: A drifted upstream reports `drifted` while the rest of the server keeps serving. Rows: `CONN-BLENDER-CONNECTOR-R007`.
 - **SC-004**: Phase 1 passes end to end against the fixture upstream. Rows: `CONN-BLENDER-CONNECTOR-R009`.
+- **SC-005**: Both images start without a GPU and answer a scene query and a rendered view in CI. Rows: `CONN-BLENDER-CONNECTOR-R018`.
 
 ## Assumptions
 
@@ -96,3 +109,6 @@ In scope: the rows of [requirements.md](requirements.md). Out of scope: the regi
 | FR-006 | `CONN-BLENDER-CONNECTOR-R007` | [plan.md](plan.md) | T-007 | [test-spec.md](test-spec.md) |
 | FR-007 | `CONN-BLENDER-CONNECTOR-R008` | [plan.md](plan.md) | T-008 | [test-spec.md](test-spec.md) |
 | FR-008 | `CONN-BLENDER-CONNECTOR-R009`, `CONN-BLENDER-CONNECTOR-R010` | [plan.md](plan.md) | T-009 to T-010 | [test-spec.md](test-spec.md) |
+| FR-009 | `CONN-BLENDER-CONNECTOR-R011`, `CONN-BLENDER-CONNECTOR-R012` | [plan.md](plan.md) | T-011 to T-012 | [test-spec.md](test-spec.md) |
+| FR-010 | `CONN-BLENDER-CONNECTOR-R013`, `CONN-BLENDER-CONNECTOR-R014`, `CONN-BLENDER-CONNECTOR-R015` | [plan.md](plan.md) | T-013 to T-015 | [test-spec.md](test-spec.md) |
+| FR-011 | `CONN-BLENDER-CONNECTOR-R016`, `CONN-BLENDER-CONNECTOR-R017`, `CONN-BLENDER-CONNECTOR-R018`, `CONN-BLENDER-CONNECTOR-R019` | [plan.md](plan.md) | T-016 to T-019 | [test-spec.md](test-spec.md) |

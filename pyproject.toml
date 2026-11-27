@@ -43,6 +43,58 @@ allow_files = ["blender_connector/upstreams.py"]
 [tool.pipelines_hooks.stdout_writes]
 served_paths = ["blender_connector"]
 
+# Container images, rendered by the shared pipeline (the repository commits no Dockerfile).
+# The connector image runs the pinned upstream in its own virtual environment: it pins an older
+# MCP library than the connector SDK, so only its command is linked onto PATH.
+[tool.pipelines.container]
+extra_stages = [
+  """FROM builder-base AS upstream
+RUN uv venv /opt/mcp-for-blender \\
+    && uv pip install --python /opt/mcp-for-blender/bin/python --only-binary :all: mcp-for-blender==2.3.3""",
+]
+stage_copies = [
+  "COPY --from=upstream /opt/mcp-for-blender /opt/mcp-for-blender",
+  "RUN ln -s /opt/mcp-for-blender/bin/mcp-for-blender /usr/local/bin/mcp-for-blender",
+  "ENV DISABLE_TELEMETRY=1 BLENDER_MCP_SAFE_MODE=1 BLENDER_HOST=localhost SCION_UPSTREAMS_INHERIT_ENV=PATH,HOME,LANG,DISABLE_TELEMETRY,BLENDER_HOST,BLENDER_PORT,BLENDER_MCP_SAFE_MODE",
+]
+
+# The Blender image: published as <image>:<version>-blender. Blender is pinned by version and by the
+# SHA-256 from the official release checksum file; the add-on comes from the pinned upstream wheel.
+[tool.pipelines.container.targets.blender]
+template = "gui-runtime"
+version = "4.5.17"
+uid = 10001
+home = "/home/blender"
+display_mode = "auto"
+viewer = true
+command = ["blender", "--python", "/opt/gui/startup.py"]
+apt = [
+  "libxi6", "libxxf86vm1", "libxfixes3", "libxrender1", "libxkbcommon0", "libsm6", "libice6",
+  "libglu1-mesa", "libgomp1", "libxext6", "libx11-6", "libdbus-1-3", "python3", "python3-pip",
+]
+setup = [
+  "mkdir -p /tmp/wheel /etc/blender-addons /usr/share/doc/blender-image && python3 -m pip download --no-deps --only-binary :all: -d /tmp/wheel mcp-for-blender==2.3.3 && echo 'ca06b6be4534859648970986b49f53d8a506355d8771adb9efba7eccfb9fa869  /tmp/wheel/mcp_for_blender-2.3.3-py3-none-any.whl' | sha256sum -c - && python3 -c \"import zipfile; z = zipfile.ZipFile('/tmp/wheel/mcp_for_blender-2.3.3-py3-none-any.whl'); open('/etc/blender-addons/blender_mcp.py', 'wb').write(z.read('blender_mcp/bundled/addon.py')); open('/usr/share/doc/blender-image/ADDON-LICENSE', 'wb').write(z.read('mcp_for_blender-2.3.3.dist-info/licenses/LICENSE'))\" && rm -rf /tmp/wheel",
+]
+licenses = "GPL-3.0-or-later AND MIT"
+notice = [
+  "This image contains Blender ${version}, free software under the GNU General Public License, version 3 or later.",
+  "The Blender source code for this version is available at https://download.blender.org/source/ and https://projects.blender.org/blender/blender.",
+  "The MCP for Blender add-on is MIT-licensed; its licence text is in /usr/share/doc/blender-image/ADDON-LICENSE.",
+  "No API key is stored in this image: integrations read their keys from mounted secrets at start.",
+]
+
+[tool.pipelines.container.targets.blender.app]
+url = "https://download.blender.org/release/Blender4.5/blender-${version}-linux-x64.tar.xz"
+sha256 = "b7d09d1aa7c346fed1e56390e815dbf1589d47324734fbad9e2007fe75ca0b8d"
+link = "blender"
+
+[tool.pipelines.container.targets.blender.env]
+BLENDERMCP_NO_UPDATE_CHECK = "1"
+
+[[tool.pipelines.container.targets.blender.files]]
+source = "image/blender/startup.py"
+target = "/opt/gui/startup.py"
+
 # Fleet contribution: advertise this package's prompts so scion-sdk
 # discovers and federates them without importing the agent code.
 [project.entry-points."scion_sdk.prompt_providers"]

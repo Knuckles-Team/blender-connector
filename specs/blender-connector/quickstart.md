@@ -12,5 +12,8 @@ Run the proof of each row from a fresh checkout after `uv sync`. Each command ex
 - CONN-BLENDER-CONNECTOR-R008: `uv run pytest -q` (the SDK conformance suite runs inside the suite)
 - CONN-BLENDER-CONNECTOR-R009: `uv run pytest tests/test_phase1_gate.py -q`
 - CONN-BLENDER-CONNECTOR-R010: `uv run pytest tests/test_content_drift.py -q` plus `uv run python scripts/generate_blender_content.py --check`
+- CONN-BLENDER-CONNECTOR-R011 to R013, R016, R017, R019: `uv run pytest tests/test_images.py -q`
+- CONN-BLENDER-CONNECTOR-R014, R015: `uv run pytest tests/test_image_startup.py -q`
+- CONN-BLENDER-CONNECTOR-R018: `uv run pytest tests/test_image_smoke.py -q`; the workflow `image-smoke.yml` runs the images
 
 The live gate runs only on a host that has the `mcp-for-blender` binary: `uv run python scripts/generate_blender_content.py --live`, together with `uv run blender-connector-probe`.
