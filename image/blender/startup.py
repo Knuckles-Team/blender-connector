@@ -341,6 +341,15 @@ def install_addon(addons_dir: Path, source: str = ADDON_SOURCE) -> bool:
     return True
 
 
+def ensure_importable(directory: Path, search_path: list[str]) -> bool:
+    """Put the add-ons directory on the import path; it did not exist when Blender started."""
+    entry = str(directory)
+    if entry in search_path:
+        return False
+    search_path.append(entry)
+    return True
+
+
 def main() -> None:
     """Run inside Blender."""
     import addon_utils
@@ -352,11 +361,16 @@ def main() -> None:
         )
         sys.exit(1)
     env = os.environ
-    changed = install_addon(
-        Path(bpy.utils.user_resource("SCRIPTS", path="addons", create=True))
-    )
+    addons_dir = Path(bpy.utils.user_resource("SCRIPTS", path="addons", create=True))
+    changed = install_addon(addons_dir)
+    ensure_importable(addons_dir, sys.path)
+    bpy.utils.refresh_script_paths()
     addon_utils.modules_refresh()
-    addon_utils.enable(ADDON_MODULE, default_set=True, persistent=True)
+    if addon_utils.enable(ADDON_MODULE, default_set=True, persistent=True) is None:
+        print(
+            f"startup: the add-on {ADDON_MODULE} could not be enabled from {addons_dir}"
+        )
+        sys.exit(1)
     print(
         f"startup: add-on {ADDON_MODULE} enabled ({'installed' if changed else 'already installed'})"
     )

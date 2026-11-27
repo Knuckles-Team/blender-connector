@@ -224,3 +224,11 @@ def test_a_gated_integration_stays_off_on_an_older_blender(tmp_path: Path) -> No
     assert _plan(env)["worldlabs"].reason == "needs Blender 5.3 or newer"
     assert not _plan(env)["worldlabs"].enabled
     assert _plan(env, (5, 3, 0))["worldlabs"].enabled
+
+
+@pytest.mark.spec("CONN-BLENDER-CONNECTOR-R014")
+def test_the_add_ons_directory_is_put_on_the_import_path_once(tmp_path: Path) -> None:
+    path: list[str] = ["/usr/lib"]
+    assert startup.ensure_importable(tmp_path, path) is True
+    assert startup.ensure_importable(tmp_path, path) is False
+    assert path == ["/usr/lib", str(tmp_path)]
