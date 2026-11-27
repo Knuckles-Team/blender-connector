@@ -1,0 +1,15 @@
+# GPU override: docker compose -f deploy/compose.yml -f deploy/compose.gpu.yml up -d
+# Gives the Blender container the GPU for Cycles and, with the graphics capability, a GPU-driven
+# X server. Without this file the bundle runs on the CPU with a software display.
+services:
+  blender:
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, compute, utility, graphics]

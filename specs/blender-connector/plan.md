@@ -78,6 +78,10 @@ Lifecycle: pooled stdio child, owned by the SDK (`SCION-CONNECTOR-CONTROL-R914.8
 
 Remote mode: an operator overlay only. The repository ships an example with placeholder values; it is validated, not exercised.
 
+### Images
+
+The connector publishes two images from configuration, with no committed Dockerfile: the connector image (the standard Python base, the upstream in its own virtual environment) and a Blender image built from the shared GUI-runtime template (`PIPE-RELEASE-R001.15` to `PIPE-RELEASE-R001.17`). The Blender specifics stay in `pyproject.toml` and `image/blender/startup.py`. The display is a switch with a GPU-driven X server first and software otherwise; the start-up script, not the agent, enables the integrations, and keys come from mounted secrets. The viewer is a third, optional container that is never exposed without an authenticating gateway. The CI smoke job needs no GPU.
+
 ### Acceptance phases
 
 | Phase | Scope | Row |

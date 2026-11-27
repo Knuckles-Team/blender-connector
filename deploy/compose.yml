@@ -1,0 +1,109 @@
+# Blender and the connector, side by side. The two containers share one network namespace (the
+# add-on socket listens on localhost and has no authentication, so it is never published) and one
+# /tmp volume (the upstream hands screenshots from Blender to the server through files there).
+#
+#   BLENDER_IMAGE=<blender image, pinned by digest> CONNECTOR_IMAGE=<connector image, pinned by digest> \
+#     docker compose -f deploy/compose.yml up -d
+#   add -f deploy/compose.gpu.yml for a GPU; add --profile viewer for the optional watch session.
+#
+# API keys for the generators and asset libraries are mounted files in BLENDER_SECRETS_DIR (see
+# docs/deployment.md); an integration without its key stays off.
+name: blender-connector
+
+services:
+  blender:
+    image: ${BLENDER_IMAGE:?set BLENDER_IMAGE to the Blender image, pinned by digest}
+    user: "10001:10001"
+    init: true
+    shm_size: 512m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      - GUI_DISPLAY_MODE=${GUI_DISPLAY_MODE:-auto}
+    volumes:
+      - tmp:/tmp
+      - home:/home/blender
+      - type: bind
+        source: ${BLENDER_SECRETS_DIR:-./secrets}
+        target: /run/secrets
+        read_only: true
+        bind:
+          create_host_path: true
+    ports:
+      # The connector shares this container's network namespace, so its port is published here.
+      - host_ip: "127.0.0.1"
+        published: "${CONNECTOR_PORT:-8000}"
+        target: 8000
+    healthcheck:
+      # The add-on listens on localhost only; check the listener on 9876 (hex 2694) from inside.
+      test: ["CMD", "sh", "-c", "grep -qi ':2694 [0-9a-f:]* 0A' /proc/net/tcp"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    restart: unless-stopped
+
+  connector:
+    image: ${CONNECTOR_IMAGE:?set CONNECTOR_IMAGE to the connector image, pinned by digest}
+    network_mode: "service:blender"
+    user: "10001:10001"
+    init: true
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      blender:
+        condition: service_healthy
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - TRANSPORT=streamable-http
+      - BLENDER_HOST=localhost
+      - BLENDER_PORT=9876
+      - BLENDER_MCP_SAFE_MODE=1
+      - DISABLE_TELEMETRY=1
+      - MCP_ALLOWED_HOSTS=${MCP_ALLOWED_HOSTS:-localhost:8000,127.0.0.1:8000}
+    volumes:
+      - tmp:/tmp
+    restart: unless-stopped
+
+  # Optional watch-and-drive session. Off unless the `viewer` profile is enabled. It listens on
+  # loopback only and has no authentication of its own beyond an optional password file: put an
+  # authenticating gateway in front of it before exposing it to anyone.
+  viewer:
+    profiles: [viewer]
+    image: ${BLENDER_IMAGE:?set BLENDER_IMAGE to the Blender image, pinned by digest}
+    command: ["viewer"]
+    user: "10001:10001"
+    init: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      blender:
+        condition: service_healthy
+    environment:
+      - GUI_VNC_VIEWONLY=${GUI_VNC_VIEWONLY:-0}
+      - GUI_VNC_PASSWORD_FILE=/run/secrets/vnc_password
+    volumes:
+      - tmp:/tmp
+      - type: bind
+        source: ${BLENDER_SECRETS_DIR:-./secrets}
+        target: /run/secrets
+        read_only: true
+        bind:
+          create_host_path: true
+    ports:
+      - host_ip: "127.0.0.1"
+        published: "${VIEWER_PORT:-6080}"
+        target: 6080
+    restart: unless-stopped
+
+volumes:
+  tmp: {}
+  home: {}
