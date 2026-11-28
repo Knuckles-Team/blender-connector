@@ -671,6 +671,35 @@ CONTRACTS = (
         ),
         "Session maintenance: telemetry opt-out and trajectory feedback.",
     ),
+    ToolUseContract(
+        "export_and_validate_kit",
+        (
+            ToolStep(
+                "blender_execute_blender_code",
+                params=("code",),
+                result=("result",),
+                refusals=(
+                    Refusal(
+                        "SCRIPT_BLOCKED",
+                        "safe mode refused file, process, network or persistence access in the script",
+                    ),
+                ),
+            ),
+            ToolStep(
+                "blender_look",
+                params=("mode", "target", "views", "max_size"),
+                result=("result",),
+                refusals=(),
+            ),
+            ToolStep(
+                "blender_get_scene_info",
+                params=("root", "fields"),
+                result=("result",),
+                refusals=(),
+            ),
+        ),
+        "Build one asset-kit family in the live session from its kit script, export it as GLB, and report its triangle counts, LOD nodes and sockets.",
+    ),
 )
 
 LINKS = (
@@ -769,6 +798,16 @@ LINKS = (
         ),
         prompts=("blender-session_controls",),
         skills=("blender-session-controls",),
+    ),
+    SurfaceLink(
+        "export_and_validate_kit",
+        tools=(
+            "blender_execute_blender_code",
+            "blender_look",
+            "blender_get_scene_info",
+        ),
+        prompts=("blender-export_and_validate_kit",),
+        skills=("blender-export-and-validate-kit",),
     ),
     SurfaceLink(
         "role-operator",

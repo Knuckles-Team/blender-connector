@@ -412,6 +412,44 @@ functionality:
         cause: "`feedback` is not one of accept, reject, undo, correction"
         fix: "Use exactly one of those values and put the user's words in `correction_text`."
 
+  - name: export_and_validate_kit
+    description: "Build one asset-kit family in the live session from its kit script, export it as GLB, and report its triangle counts, LOD nodes and sockets."
+    use_when: "A person reviews one generated asset family by eye before a kit release."
+    not_for: "Building the release kit, which runs headless with no add-on socket."
+    reads:
+      - scene
+      - renders
+    writes:
+      - scene
+    tools:
+      - execute_blender_code
+      - look
+      - get_scene_info
+    steps:
+      - do: "Clear the scene, add the kit directory to `sys.path`, import the stage module the caller names and call its `build([family_id], style)`."
+        tool: execute_blender_code
+        args: '{"code": "import bpy, sys, importlib\nbpy.ops.wm.read_factory_settings(use_empty=True)\nsys.path.insert(0, \"<kit_dir>\")\nstage = importlib.import_module(\"<stage_module>\")\nstage.build([\"<family_id>\"], \"<style>\")\nprint(\"BUILT <family_id>\")"}'
+        check: "The output holds the line `BUILT <family_id>`."
+      - do: "Export the selection as GLB, then print each LOD node with its triangle count and each `socket.*` empty with its location."
+        tool: execute_blender_code
+        args: '{"code": "import bpy\nbpy.ops.object.select_all(action=\"SELECT\")\nbpy.ops.export_scene.gltf(filepath=\"<temp_path>.glb\", export_format=\"GLB\", export_extras=True)\nfor o in bpy.data.objects:\n    if o.type == \"MESH\" and \"LOD\" in o.name:\n        o.data.calc_loop_triangles()\n        print(\"LOD\", o.name, len(o.data.loop_triangles))\n    elif o.type == \"EMPTY\" and o.name.startswith(\"socket.\"):\n        print(\"SOCKET\", o.name, tuple(round(v, 3) for v in o.location))"}'
+        check: "One output line per LOD node and one per socket."
+      - do: "Look at the family from the front, the top and a street-level angle."
+        tool: look
+        args: '{"mode": "angles", "target": ["<family_root>"], "views": ["front", "top", [1, -1, 0.1]], "max_size": 768}'
+        check: "Three images, each with the family centred."
+      - do: "Read the topology of the family."
+        tool: get_scene_info
+        args: '{"root": "<family_root>", "fields": ["topology"]}'
+        check: "Zero non-manifold edges."
+    recovery:
+      - symptom: "The stage module cannot be imported"
+        cause: "The kit path is wrong"
+        fix: "Correct `<kit_dir>` and the module name the caller gave, then repeat step 1."
+      - symptom: "A triangle count is over budget"
+        cause: "The family fails the kit gate"
+        fix: "Change the stage script and rebuild; never hand-edit the generated geometry."
+
 # Guardrails and outputs every functionality prompt carries as an agent
 # definition (CONN-BLENDER-CONNECTOR-R020).
 agent_defaults:
@@ -437,6 +475,7 @@ roles:
       - assets
       - generative_3d
       - session_controls
+      - export_and_validate_kit
     reads:
       - scene
       - asset_libraries

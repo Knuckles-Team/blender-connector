@@ -72,6 +72,7 @@ The `blender` namespace is active by default: the `blender_*` tools are visible 
 | `blender-assets` | Search and import library assets into the scene. |
 | `blender-generative-3d` | Generate 3D content from text or images; these operations may cost credits. |
 | `blender-session-controls` | Session maintenance: telemetry opt-out and trajectory feedback. |
+| `blender-export-and-validate-kit` | Build one asset-kit family in the live session from its kit script, export it as GLB, and report its triangle counts, LOD nodes and sockets. |
 
 ## Where the data lives
 

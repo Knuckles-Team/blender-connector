@@ -41,3 +41,23 @@ def test_default_content_surfaces(clean_upstream_env, monkeypatch) -> None:
     for path in ROOT.glob("prompts/*.json"):
         if not path.name.startswith("_"):
             assert path.stem in prompts
+
+
+def test_the_kit_review_prompt_is_listed(clean_upstream_env, monkeypatch) -> None:
+    """CONN-BLENDER-CONNECTOR-CONTENT-R008: the kit review functionality is served."""
+    monkeypatch.setenv("SCION_UPSTREAMS_DISABLED", "blender")
+
+    from blender_connector.mcp_server import build_server
+
+    async def listings():
+        async with Client(build_server(command_args=[])) as client:
+            return {prompt.name for prompt in await client.list_prompts()}
+
+    assert "blender-export_and_validate_kit" in asyncio.run(listings())
+    skill = (ROOT / "skills/blender-export-and-validate-kit/SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    for step in ("1. ", "2. ", "3. ", "4. "):
+        assert step in skill
+    for tool in ("execute_blender_code", "look", "get_scene_info"):
+        assert f"blender_{tool}" in skill

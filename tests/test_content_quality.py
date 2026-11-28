@@ -23,7 +23,7 @@ def _skills() -> list[Path]:
 
 
 def test_there_is_one_skill_per_functionality() -> None:
-    assert len(_skills()) == 9
+    assert len(_skills()) == 10
 
 
 @pytest.mark.parametrize("path", _skills(), ids=lambda p: p.parent.name)
