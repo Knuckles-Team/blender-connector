@@ -58,7 +58,7 @@ A maintainer updates `mcp-for-blender` and sees what changed before the next cli
 
 ## Success Criteria
 
-- **SC-001**: The skill, the ontology file and nine prompts exist and are listed by the server. Rows: `CONN-BLENDER-CONNECTOR-CONTENT-R001`, `CONN-BLENDER-CONNECTOR-CONTENT-R003`, `CONN-BLENDER-CONNECTOR-CONTENT-R004`, `CONN-BLENDER-CONNECTOR-CONTENT-R005`.
+- **SC-001**: The skill, the ontology file and ten prompts exist and are listed by the server. Rows: `CONN-BLENDER-CONNECTOR-CONTENT-R001`, `CONN-BLENDER-CONNECTOR-CONTENT-R003`, `CONN-BLENDER-CONNECTOR-CONTENT-R004`, `CONN-BLENDER-CONNECTOR-CONTENT-R005`.
 - **SC-002**: Every snapshot tool belongs to at least one functionality. Rows: `CONN-BLENDER-CONNECTOR-CONTENT-R002`.
 - **SC-003**: Two generator runs give identical bytes. Rows: `CONN-BLENDER-CONNECTOR-CONTENT-R006`, `CONN-BLENDER-CONNECTOR-CONTENT-R007`.
 
