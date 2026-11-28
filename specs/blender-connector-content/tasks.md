@@ -11,3 +11,5 @@ Each task line reads `- [ ] T001 [P] [US1] <ID>-R001 description`. Order is prod
 - [x] T005 [US1] CONN-BLENDER-CONNECTOR-CONTENT-R005 Generate a prompt per functionality.
 - [x] T006 [US1] CONN-BLENDER-CONNECTOR-CONTENT-R006 Content generator and tool snapshot.
 - [x] T007 [US1] CONN-BLENDER-CONNECTOR-CONTENT-R007 Drift gate for generated content.
+- [ ] T008 [US1] CONN-BLENDER-CONNECTOR-CONTENT-R008 Functionality `export_and_validate_kit`.
+- [ ] T009 [US1] CONN-BLENDER-CONNECTOR-CONTENT-R009 Scene classes are creative works.

@@ -16,7 +16,7 @@ Governing spec: [spec.md](spec.md). Rows: [requirements.md](requirements.md).
 - **Project Type**: connector (MCP server)
 - **Performance Goals**: N/A
 - **Constraints**: the renderers are pure functions; the generator is the only writer
-- **Scale/Scope**: 7 rows, one app, nine functionalities, ten snapshot tools
+- **Scale/Scope**: 9 rows, one app, ten functionalities, ten snapshot tools
 
 ## Constitution Check
 
@@ -30,7 +30,7 @@ Governing spec: [spec.md](spec.md). Rows: [requirements.md](requirements.md).
 ```text
 blender_connector/ontology/blender.ttl      new       generated: pack classes, domain classes, individuals
 blender_connector/skills/blender/SKILL.md   new       generated: front matter, activation, tool table
-blender_connector/prompts/blender-*.json    new       generated, nine files
+blender_connector/prompts/blender-*.json    new       generated, ten files
 blender_connector/content_gen/              new       sources, skill, ontology, prompts, errors
 scripts/generate_blender_content.py         new       --refresh, --write, --check, --live
 content/apps/blender.yml                    new       authored summary, classes, functionalities
