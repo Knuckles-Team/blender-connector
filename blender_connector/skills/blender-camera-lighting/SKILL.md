@@ -75,7 +75,7 @@ Importing an HDRI from a library (use blender-assets with polyhaven hdris) or in
 | `look` with `mode: camera` fails | `scene.camera` is not set | Assign `bpy.context.scene.camera` in a script, then look again. |
 | Rendering is slow or Cycles reports no GPU | No compute device is enabled in Blender's Cycles preferences; safe mode blocks script access to preferences | Set `scene.cycles.device = 'GPU'` in a script (allowed) and ask the operator to enable the CUDA devices in the host's Blender startup or preferences; otherwise accept CPU rendering. |
 | `handshake` returns `ready: false`, or a `blender_*` call times out | Blender is not running, the add-on server is stopped, or the host and port do not match the running instance | Start Blender, open the 3D viewport sidebar (N), tab `MCP for Blender`, press `Start MCP Server`; then re-run `handshake` and confirm the port equals `BLENDER_PORT`. |
-| `registry_status` shows the `blender` upstream `unavailable` with `UPSTREAM_SPAWN_FAILED` | The `mcp-for-blender` binary is not on the connector's PATH | Install it with `uv tool install mcp-for-blender` on the connector host, then call `registry_status` again. `handshake` reports `command_found`. |
+| `registry_status` shows the `blender` upstream `Backoff` with `UPSTREAM_SPAWN_FAILED` | The `mcp-for-blender` binary is not on the connector's PATH | Install it with `uv tool install mcp-for-blender` on the connector host, then call `registry_status` again. `handshake` reports `command_found`. |
 | No `blender_*` tools are listed | The `blender` namespace was deactivated or lazy activation is on | Call `registry_activate` with the namespace `blender`, then list tools again. |
 
 ## Related

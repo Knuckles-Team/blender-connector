@@ -43,7 +43,7 @@ def test_initial_list_is_full_surface(
                     await client.call_tool("registry_status", {})
                 ).structured_content["result"]
             }
-            assert status["blender"]["state"] == "ready"
+            assert status["blender"]["state"] == "Ready"
             assert status["blender"]["tool_count"] == len(FIXTURE_TOOLS)
 
     asyncio.run(scenario())

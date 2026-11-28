@@ -45,7 +45,7 @@ recovery:
   - symptom: "`handshake` returns `ready: false`, or a `blender_*` call times out"
     cause: "Blender is not running, the add-on server is stopped, or the host and port do not match the running instance"
     fix: "Start Blender, open the 3D viewport sidebar (N), tab `MCP for Blender`, press `Start MCP Server`; then re-run `handshake` and confirm the port equals `BLENDER_PORT`."
-  - symptom: "`registry_status` shows the `blender` upstream `unavailable` with `UPSTREAM_SPAWN_FAILED`"
+  - symptom: "`registry_status` shows the `blender` upstream `Backoff` with `UPSTREAM_SPAWN_FAILED`"
     cause: "The `mcp-for-blender` binary is not on the connector's PATH"
     fix: "Install it with `uv tool install mcp-for-blender` on the connector host, then call `registry_status` again. `handshake` reports `command_found`."
   - symptom: "No `blender_*` tools are listed"
@@ -92,6 +92,8 @@ functionality:
     description: "Report the addon status, the connection state and the scene's objects and materials."
     use_when: "Starting a session, before editing, or when you need facts about what is in the scene: counts, positions, sizes, materials, modifiers, mesh health or render settings."
     not_for: "Seeing the scene as an image (use blender-review-viewport) or changing anything (use blender-build-scene)."
+    reads:
+      - scene
     tools:
       - get_addon_status
       - get_scene_info
@@ -120,6 +122,10 @@ functionality:
     description: "Add, move and shape objects with Python executed inside Blender."
     use_when: "Creating, moving, scaling, parenting, deleting or modifying objects and meshes; any scene change that has no dedicated tool."
     not_for: "Downloading a library asset (use blender-assets), producing a new textured model from a prompt (use blender-generative-3d) or only looking at the scene (use blender-review-viewport)."
+    reads:
+      - scene
+    writes:
+      - scene
     tools:
       - execute_blender_code
       - get_scene_info
@@ -154,6 +160,10 @@ functionality:
     description: "Author materials, textures and node graphs for objects."
     use_when: "Creating or editing a material, wiring a shader node graph, assigning a material to an object, or setting texture inputs."
     not_for: "Downloading a ready-made PBR texture set (use blender-assets with asset_type textures)."
+    reads:
+      - scene
+    writes:
+      - scene
     tools:
       - execute_blender_code
       - look
@@ -185,6 +195,10 @@ functionality:
     description: "Place cameras and lights and set the world environment."
     use_when: "Adding or aiming a camera, adding lights, setting exposure or the world background, or choosing the render engine and device."
     not_for: "Importing an HDRI from a library (use blender-assets with polyhaven hdris) or inspecting without changing (use blender-inspect-scene)."
+    reads:
+      - scene
+    writes:
+      - scene
     tools:
       - execute_blender_code
       - look
@@ -216,6 +230,10 @@ functionality:
     description: "Rig objects with armatures and animate actions and keyframes."
     use_when: "Creating an armature, parenting a mesh to bones, posing, setting keyframes or an action, or changing the frame range."
     not_for: "Static scene layout (use blender-build-scene) or reviewing the motion only (use blender-review-viewport with frames)."
+    reads:
+      - scene
+    writes:
+      - scene
     tools:
       - execute_blender_code
       - get_scene_info
@@ -252,6 +270,9 @@ functionality:
     description: "Review the scene with viewport screenshots."
     use_when: "Seeing the scene or an object as an image: a quick check after an edit, multiple angles, the camera framing, or frames across an animation."
     not_for: "Exact numbers such as sizes, counts or positions (use blender-inspect-scene)."
+    reads:
+      - scene
+      - renders
     tools:
       - look
       - get_scene_info
@@ -283,6 +304,11 @@ functionality:
     description: "Search and import library assets into the scene."
     use_when: "Using an existing asset: an HDRI for the world, a PBR texture set, or a model from Poly Haven, Sketchfab or Poly Pizza."
     not_for: "Creating a new model from a prompt (use blender-generative-3d) or modeling by script (use blender-build-scene)."
+    reads:
+      - asset_libraries
+      - scene
+    writes:
+      - scene
     tools:
       - get_addon_status
       - search_assets
@@ -318,6 +344,11 @@ functionality:
     description: "Generate 3D content from text or images; these operations may cost credits."
     use_when: "The user asks for a new textured model from a prompt or image, or for a generated environment as Gaussian splats."
     not_for: "Ordinary scene building, ground, rooms or backdrops you can model or find (use blender-build-scene or blender-assets). Do not generate repeats: duplicate the first object instead."
+    reads:
+      - generators
+      - scene
+    writes:
+      - scene
     tools:
       - get_addon_status
       - generate_3d
@@ -358,6 +389,8 @@ functionality:
     description: "Session maintenance: telemetry opt-out and trajectory feedback."
     use_when: "The user asks to stop data collection, or reacts to a result (accept, reject, undo, correction)."
     not_for: "Any scene work, and never to turn telemetry back on: only the user can do that in Blender preferences."
+    reads:
+      - scene
     tools:
       - disable_telemetry
       - record_trajectory_feedback
@@ -377,6 +410,15 @@ functionality:
       - symptom: "Feedback is rejected"
         cause: "`feedback` is not one of accept, reject, undo, correction"
         fix: "Use exactly one of those values and put the user's words in `correction_text`."
+
+# Guardrails and outputs every functionality prompt carries as an agent
+# definition (CONN-BLENDER-CONNECTOR-R020).
+agent_defaults:
+  never:
+    - "Run a script before the .blend file is saved or the user has said it is safe."
+    - "Turn safe mode off or work around a blocked script."
+  outputs:
+    - "A summary of each step: the tool called, the check that passed, and the scene state afterwards."
 
 # One operator prompt plus one prompt per role. Each is a full agent
 # definition: role, tools, skills, data locations, guardrails, outputs.

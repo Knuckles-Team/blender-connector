@@ -27,6 +27,37 @@
       "refusals are reported to the operator, never retried silently"
     ]
   },
+  "agent": {
+    "kind": "operator",
+    "tools": [
+      "blender_execute_blender_code",
+      "blender_look"
+    ],
+    "skills": [
+      "blender",
+      "blender-camera-lighting"
+    ],
+    "data": {
+      "reads": [
+        "scene"
+      ],
+      "writes": [
+        "scene"
+      ]
+    },
+    "guardrails": {
+      "approval_required": [
+        "blender_execute_blender_code"
+      ],
+      "never": [
+        "Run a script before the .blend file is saved or the user has said it is safe.",
+        "Turn safe mode off or work around a blocked script."
+      ]
+    },
+    "outputs": [
+      "A summary of each step: the tool called, the check that passed, and the scene state afterwards."
+    ]
+  },
   "skills": [
     "blender",
     "blender-camera-lighting"

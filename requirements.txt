@@ -1,2 +1,2 @@
-scion-sdk[mcp]>=0.7.1,<0.8
+scion-sdk[mcp]>=0.14.0,<0.15
 pyyaml>=6.0.2,<7

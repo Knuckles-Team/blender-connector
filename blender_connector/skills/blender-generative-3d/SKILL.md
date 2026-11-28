@@ -87,7 +87,7 @@ Ordinary scene building, ground, rooms or backdrops you can model or find (use b
 | The imported object is the wrong size or facing | Generated models arrive at arbitrary scale and facing | Set `obj.dimensions` and rotation with a `blender_execute_blender_code` step and verify with `blender_look`. |
 | `generate_gaussian_world` fails | It needs Blender 5.3 or newer | Report the Blender version from `blender_get_addon_status`; do not retry on an older Blender. |
 | `handshake` returns `ready: false`, or a `blender_*` call times out | Blender is not running, the add-on server is stopped, or the host and port do not match the running instance | Start Blender, open the 3D viewport sidebar (N), tab `MCP for Blender`, press `Start MCP Server`; then re-run `handshake` and confirm the port equals `BLENDER_PORT`. |
-| `registry_status` shows the `blender` upstream `unavailable` with `UPSTREAM_SPAWN_FAILED` | The `mcp-for-blender` binary is not on the connector's PATH | Install it with `uv tool install mcp-for-blender` on the connector host, then call `registry_status` again. `handshake` reports `command_found`. |
+| `registry_status` shows the `blender` upstream `Backoff` with `UPSTREAM_SPAWN_FAILED` | The `mcp-for-blender` binary is not on the connector's PATH | Install it with `uv tool install mcp-for-blender` on the connector host, then call `registry_status` again. `handshake` reports `command_found`. |
 | No `blender_*` tools are listed | The `blender` namespace was deactivated or lazy activation is on | Call `registry_activate` with the namespace `blender`, then list tools again. |
 
 ## Related

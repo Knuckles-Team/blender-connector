@@ -58,7 +58,7 @@ An operator starts Blender with a virtual display and the connector next to it, 
 
 ### Edge Cases
 
-- The upstream binary is missing from `PATH`: the upstream is `unavailable` with a typed code and the server stays up (`CONN-BLENDER-CONNECTOR-R004`).
+- The upstream binary is missing from `PATH`: the upstream is `Backoff` with a typed code and the server stays up (`CONN-BLENDER-CONNECTOR-R004`).
 - The Blender addon socket is down: the `blender_*` calls return the upstream's actionable timeout text while the server, the registry and the content keep serving (`CONN-BLENDER-CONNECTOR-R004`).
 - A literal credential in an overlay: the overlay refuses (`CONN-BLENDER-CONNECTOR-R005`).
 - An upstream update changes the tool list: the probe and the drift gate report it (`CONN-BLENDER-CONNECTOR-R003`, `CONN-BLENDER-CONNECTOR-R007`, `CONN-BLENDER-CONNECTOR-R010`).
@@ -82,7 +82,7 @@ An operator starts Blender with a virtual display and the connector next to it, 
 
 - **SC-001**: The first tool list holds exactly eight tools against a three-tool fixture upstream and fifteen against the live snapshot surface. Rows: `CONN-BLENDER-CONNECTOR-R002`.
 - **SC-002**: An unavailable upstream hides only its own proxied tools. Rows: `CONN-BLENDER-CONNECTOR-R004`.
-- **SC-003**: A drifted upstream reports `drifted` while the rest of the server keeps serving. Rows: `CONN-BLENDER-CONNECTOR-R007`.
+- **SC-003**: A drifted upstream reports `Degraded` while the rest of the server keeps serving. Rows: `CONN-BLENDER-CONNECTOR-R007`.
 - **SC-004**: Phase 1 passes end to end against the fixture upstream. Rows: `CONN-BLENDER-CONNECTOR-R009`.
 - **SC-005**: Both images start without a GPU and answer a scene query and a rendered view in CI. Rows: `CONN-BLENDER-CONNECTOR-R018`.
 

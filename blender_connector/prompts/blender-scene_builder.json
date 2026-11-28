@@ -25,7 +25,8 @@
     ]
   },
   "agent": {
-    "kind": "role",
+    "kind": "business-role",
+    "business_role": "scene_builder",
     "tools": [
       "blender_get_addon_status",
       "blender_get_scene_info",
@@ -43,11 +44,11 @@
     ],
     "data": {
       "reads": [
-        "scene: The open .blend session inside the running Blender, reached only through the add-on socket.",
-        "asset_libraries: Poly Haven, Sketchfab and Poly Pizza, reached through `blender_search_assets` and `blender_import_asset`; availability per user comes from `blender_get_addon_status`."
+        "scene",
+        "asset_libraries"
       ],
       "writes": [
-        "scene: The open .blend session inside the running Blender, reached only through the add-on socket."
+        "scene"
       ]
     },
     "guardrails": {

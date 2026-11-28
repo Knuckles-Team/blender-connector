@@ -25,7 +25,8 @@
     ]
   },
   "agent": {
-    "kind": "role",
+    "kind": "business-role",
+    "business_role": "technical_animator",
     "tools": [
       "blender_execute_blender_code",
       "blender_get_scene_info",
@@ -39,10 +40,10 @@
     ],
     "data": {
       "reads": [
-        "scene: The open .blend session inside the running Blender, reached only through the add-on socket."
+        "scene"
       ],
       "writes": [
-        "scene: The open .blend session inside the running Blender, reached only through the add-on socket."
+        "scene"
       ]
     },
     "guardrails": {

@@ -147,7 +147,7 @@ def render_skill(source: BlenderSource, snapshot: ToolSnapshot) -> str:
         "1. Check the connector with `handshake` and verify the reply says "
         "`ready: true`.",
         f"2. Confirm the namespace with `registry_status` and verify the "
-        f"`{app}` upstream is not `unavailable`.",
+        f"`{app}` upstream is not `Backoff`.",
         "3. Pick the `blender-<functionality>` skill that matches the request "
         "from the table below and verify its name starts with `blender-`.",
         f"4. Read before you change with `{app}_get_scene_info` and verify "
