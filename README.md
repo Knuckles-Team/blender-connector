@@ -109,6 +109,18 @@ The Blender add-on socket has no authentication: keep it on the same host or pod
 
 ---
 
+## Security: the add-on socket
+
+The Blender add-on server takes commands on its port with no authentication, and `blender_execute_blender_code` runs any Python in the Blender session. Whoever reaches the socket controls the session and everything the Blender user can read. So:
+
+- The socket must listen on the loopback address only (`BLENDER_HOST` stays `localhost` or `127.0.0.1`).
+- The connector must run on the same host as Blender; it never opens a second socket to Blender.
+- No gateway, port forward or container port mapping may expose the socket.
+- Blender should run as a dedicated user with no access to credentials.
+- Callers reach the connector only through Arbora `fleet.call`, which applies admission and scopes.
+
+---
+
 ## Environment Variables
 
 | Setting | Meaning | Start value |

@@ -28,6 +28,7 @@ prerequisites:
   - "Call the connector's `handshake` tool first: `ready: true` means the add-on socket answers. `ready: false` means Blender is not running, the add-on is off, or the host and port do not match."
   - "Save the .blend file before any `blender_execute_blender_code` call: that tool runs arbitrary Python inside the live session."
   - "The connector never opens its own socket to Blender; every scene action goes through a `blender_*` tool."
+  - "Security: the add-on socket has no authentication and `blender_execute_blender_code` runs any Python in the session, so the socket must listen on the loopback address only, the connector must run on the same host as Blender, no gateway, port forward or container port mapping may expose the socket, Blender should run as a dedicated user with no access to credentials, and callers reach the connector only through Arbora `fleet.call`, which applies admission and scopes."
 
 # Where the data lives; the ontology records these as data locations.
 data_locations:
