@@ -58,6 +58,8 @@ class Functionality:
     use_when: str = ""
     not_for: str = ""
     recovery: tuple[Recovery, ...] = field(default_factory=tuple)
+    reads: tuple[str, ...] = field(default_factory=tuple)
+    writes: tuple[str, ...] = field(default_factory=tuple)
 
 
 @dataclass(frozen=True)
@@ -95,6 +97,8 @@ class BlenderSource:
     data_locations: tuple[DataLocation, ...] = field(default_factory=tuple)
     recovery: tuple[Recovery, ...] = field(default_factory=tuple)
     roles: tuple[Role, ...] = field(default_factory=tuple)
+    agent_never: tuple[str, ...] = field(default_factory=tuple)
+    agent_outputs: tuple[str, ...] = field(default_factory=tuple)
 
 
 @dataclass(frozen=True)
@@ -142,6 +146,8 @@ def load_app_source(path: Path) -> BlenderSource:
             use_when=str(item.get("use_when", "")),
             not_for=str(item.get("not_for", "")),
             recovery=_recovery(item.get("recovery", [])),
+            reads=_strs(item.get("reads", [])),
+            writes=_strs(item.get("writes", [])),
         )
         for item in document.get("functionality", [])
         if isinstance(item, dict) and item.get("name")
@@ -167,6 +173,16 @@ def load_app_source(path: Path) -> BlenderSource:
         for item in document.get("roles", [])
         if isinstance(item, dict) and item.get("name")
     )
+    locations = {
+        str(i["name"])
+        for i in document.get("data_locations", [])
+        if isinstance(i, dict) and i.get("name")
+    }
+    for func in functionalities:
+        for name in (*func.reads, *func.writes):
+            if name not in locations:
+                raise ValueError(f"{func.name}: unknown data location {name!r}")
+    defaults = document.get("agent_defaults") or {}
     known = {func.name for func in functionalities}
     for role in roles:
         for name in role.functionalities:
@@ -185,6 +201,8 @@ def load_app_source(path: Path) -> BlenderSource:
         ),
         recovery=_recovery(document.get("recovery", [])),
         roles=roles,
+        agent_never=_strs(defaults.get("never", [])),
+        agent_outputs=_strs(defaults.get("outputs", [])),
     )
 
 

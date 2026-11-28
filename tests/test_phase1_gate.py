@@ -57,7 +57,7 @@ def test_phase1_gate(blender_cli_factory, clean_upstream_env) -> None:
                     await client.call_tool("registry_status", {})
                 ).structured_content["result"]
             }
-            assert status["blender"]["state"] == "ready"
+            assert status["blender"]["state"] == "Ready"
             assert status["blender"]["tool_count"] == len(FIXTURE_TOOLS)
 
     asyncio.run(scenario())

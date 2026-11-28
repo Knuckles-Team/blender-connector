@@ -104,10 +104,37 @@ def _prompt(
                 "refusals are reported to the operator, never retried silently",
             ],
         },
+        "agent": {
+            "kind": "operator",
+            "tools": namespaced,
+            "skills": [app, skill_name(app, functionality.name)],
+            "data": {
+                "reads": list(functionality.reads),
+                "writes": list(functionality.writes),
+            },
+            "guardrails": {
+                "approval_required": [
+                    t for t in namespaced if t in APPROVAL_REQUIRED_TOOLS
+                ],
+                "never": list(source.agent_never),
+            },
+            "outputs": list(source.agent_outputs),
+        },
         "skills": [app, skill_name(app, functionality.name)],
         "tools": namespaced,
         "requires_namespace": app,
     }
+
+
+#: The one tool that runs arbitrary Python in the live session.
+APPROVAL_REQUIRED_TOOLS = frozenset({"blender_execute_blender_code"})
+
+
+def _agent_kind(role) -> dict[str, str]:
+    """The operator, or a business role named after its source entry."""
+    if role.name == "operator":
+        return {"kind": "operator"}
+    return {"kind": "business-role", "business_role": role.name}
 
 
 def _role_prompt(
@@ -122,7 +149,6 @@ def _role_prompt(
         _check_tools(app, func.tools, snapshot)
         skills.append(skill_name(app, name))
         tools += [f"{app}_{t}" for t in func.tools if f"{app}_{t}" not in tools]
-    locations = {loc.name: loc.where for loc in source.data_locations}
     directive = (
         f"You are the {role.title}. {role.goal} Work only through the "
         f"`{app}` namespace of the blender-connector; call `handshake` first. "
@@ -157,17 +183,10 @@ def _role_prompt(
             ],
         },
         "agent": {
-            "kind": "operator" if role.name == "operator" else "role",
+            **_agent_kind(role),
             "tools": tools,
             "skills": skills,
-            "data": {
-                "reads": [
-                    f"{n}: {locations.get(n, '')}".strip(": ") for n in role.reads
-                ],
-                "writes": [
-                    f"{n}: {locations.get(n, '')}".strip(": ") for n in role.writes
-                ],
-            },
+            "data": {"reads": list(role.reads), "writes": list(role.writes)},
             "guardrails": {
                 "approval_required": list(role.approval_required),
                 "never": list(role.never),

@@ -84,12 +84,12 @@ app:app a app:BlenderApp ;
 app:BlenderFile a owl:Class ;
     rdfs:label "BlenderFile" ;
     rdfs:comment "A .blend scene file." ;
-    rdfs:subClassOf :Document, core:Document .
+    rdfs:subClassOf :CreativeWork, core:CreativeWork .
 
 app:Scene a owl:Class ;
     rdfs:label "Scene" ;
     rdfs:comment "A Blender scene: objects, cameras, lights and world." ;
-    rdfs:subClassOf :Document, core:Document .
+    rdfs:subClassOf :CreativeWork, core:CreativeWork .
 
 app:Object a owl:Class ;
     rdfs:label "Object" ;
@@ -242,6 +242,21 @@ app:contract_session_controls a app:ToolUseContract ;
     app:contractFor app:use_case_session_controls ;
     app:toolOrder "1:blender_disable_telemetry" ;
     app:toolOrder "2:blender_record_trajectory_feedback" .
+
+app:use_case_export_and_validate_kit a app:BlenderUseCase ;
+    app:forApp app:app ;
+    app:usesToolName "blender_execute_blender_code" ;
+    app:usesToolName "blender_look" ;
+    app:usesToolName "blender_get_scene_info" ;
+    app:usesSkill "blender-export-and-validate-kit" ;
+    app:hasPrompt "blender-export_and_validate_kit" .
+
+app:contract_export_and_validate_kit a app:ToolUseContract ;
+    app:contractFor app:use_case_export_and_validate_kit ;
+    app:toolOrder "1:blender_execute_blender_code" ;
+    app:toolOrder "2:blender_execute_blender_code" ;
+    app:toolOrder "3:blender_look" ;
+    app:toolOrder "4:blender_get_scene_info" .
 
 app:data_scene a app:DataLocation ;
     rdfs:label "scene" ;

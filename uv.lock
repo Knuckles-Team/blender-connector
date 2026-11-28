@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.12, <3.15"
 resolution-markers = [
     "python_full_version >= '3.14'",
@@ -73,7 +73,7 @@ wheels = [
 
 [[package]]
 name = "blender-connector"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "pyyaml" },
@@ -109,9 +109,9 @@ requires-dist = [
     { name = "pytest-xdist", marker = "extra == 'test'", specifier = ">=3.8.0" },
     { name = "pyyaml", specifier = ">=6.0.2,<7" },
     { name = "rdflib", marker = "extra == 'test'", specifier = ">=7.0.0,<8" },
-    { name = "scion-sdk", extras = ["mcp"], specifier = ">=0.7.1,<0.8" },
-    { name = "scion-sdk", extras = ["mcp"], marker = "extra == 'all'", specifier = ">=0.7.1,<0.8" },
-    { name = "scion-sdk", extras = ["mcp"], marker = "extra == 'mcp'", specifier = ">=0.7.1,<0.8" },
+    { name = "scion-sdk", extras = ["mcp"], specifier = ">=0.14.0,<0.15" },
+    { name = "scion-sdk", extras = ["mcp"], marker = "extra == 'all'", specifier = ">=0.14.0,<0.15" },
+    { name = "scion-sdk", extras = ["mcp"], marker = "extra == 'mcp'", specifier = ">=0.14.0,<0.15" },
 ]
 provides-extras = ["mcp", "all", "test"]
 
@@ -1384,7 +1384,7 @@ wheels = [
 
 [[package]]
 name = "scion-sdk"
-version = "0.7.1"
+version = "0.14.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -1396,10 +1396,11 @@ dependencies = [
     { name = "medulla" },
     { name = "pydantic" },
     { name = "pyyaml" },
+    { name = "rdflib" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/30/d5/08a2f35748c53e10e92b8f3e49222d28caaa7d66788c3bbec239ac40c1be/scion_sdk-0.7.1.tar.gz", hash = "sha256:f080bd07f1dc279e26d3c0c6d157cba96e44593e9f277e8e0df5d5f7554cbb65", size = 1181251, upload-time = "2026-11-04T06:02:08.29Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0b/ef/630ab252d9a00d706ec325810c5e5c5b71b959b012d7ec50f2133e9eb889/scion_sdk-0.14.0.tar.gz", hash = "sha256:c11c9db036d8e77e8305e3ab7b56c1ea5b02e9a576b459130a7154460940dfd8", size = 1582303, upload-time = "2026-11-28T08:10:00.032Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/61/c8/b216c1b5fc32d80faad6c0a1741d8e79ed4965f779aef0d0238be62c4818/scion_sdk-0.7.1-py3-none-any.whl", hash = "sha256:faf0b263311de9a6be91939005338987de7d6184bb464cad0d09f0541a67083d", size = 1139800, upload-time = "2026-11-04T06:02:09.979Z" },
+    { url = "https://files.pythonhosted.org/packages/24/f9/1dc57c89315f90dc56dfaeb85bd1a57b68ef8338f2b20bd7d24aee2408d3/scion_sdk-0.14.0-py3-none-any.whl", hash = "sha256:b9e6e6ceba341bc89daecc024d6a41723750f73e7824a53ab38bed4c8a561137", size = 1432971, upload-time = "2026-11-28T08:10:01.452Z" },
 ]
 
 [package.optional-dependencies]

@@ -23,5 +23,5 @@ Each task line reads `- [ ] T001 [P] [US1] <ID>-R001 description`. Order is prod
 - [ ] T017 [US5] CONN-BLENDER-CONNECTOR-R017 An optional watch-and-drive session, off by default and never public.
 - [ ] T018 [US5] CONN-BLENDER-CONNECTOR-R018 A CI smoke job runs both images and proves the scene round trip without a GPU.
 - [ ] T019 [US5] CONN-BLENDER-CONNECTOR-R019 The deployment guide documents the images, the compose bundle, secrets and the viewer.
-- [ ] T020 [US5] CONN-BLENDER-CONNECTOR-R020 The connector runs on the current SDK line.
-- [ ] T021 [US5] CONN-BLENDER-CONNECTOR-R021 The add-on socket risk is documented.
+- [x] T020 [US5] CONN-BLENDER-CONNECTOR-R020 The connector runs on the current SDK line.
+- [x] T021 [US5] CONN-BLENDER-CONNECTOR-R021 The add-on socket risk is documented.

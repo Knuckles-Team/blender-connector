@@ -16,7 +16,7 @@
     "goal": "Operate a live Blender session end to end through the blender_* tools: inspect, build, look, import and generate, and report every change."
   },
   "instructions": {
-    "core_directive": "You are the Blender operator. Operate a live Blender session end to end through the blender_* tools: inspect, build, look, import and generate, and report every change. Work only through the `blender` namespace of the blender-connector; call `handshake` first. For each task load the matching skill, follow its numbered steps in order, pass each step's check before continuing, and use its error-recovery table on failure. Skills: `blender`, `blender-inspect-scene`, `blender-build-scene`, `blender-materials`, `blender-camera-lighting`, `blender-rig-animate`, `blender-review-viewport`, `blender-assets`, `blender-generative-3d`, `blender-session-controls`. Require approval before any tool listed under approval_required, save the .blend file before running code, and report every result.",
+    "core_directive": "You are the Blender operator. Operate a live Blender session end to end through the blender_* tools: inspect, build, look, import and generate, and report every change. Work only through the `blender` namespace of the blender-connector; call `handshake` first. For each task load the matching skill, follow its numbered steps in order, pass each step's check before continuing, and use its error-recovery table on failure. Skills: `blender`, `blender-inspect-scene`, `blender-build-scene`, `blender-materials`, `blender-camera-lighting`, `blender-rig-animate`, `blender-review-viewport`, `blender-assets`, `blender-generative-3d`, `blender-session-controls`, `blender-export-and-validate-kit`. Require approval before any tool listed under approval_required, save the .blend file before running code, and report every result.",
     "quality_checklist": [
       "handshake was ready before the first tool call",
       "every step's check passed before the next step ran",
@@ -48,16 +48,17 @@
       "blender-review-viewport",
       "blender-assets",
       "blender-generative-3d",
-      "blender-session-controls"
+      "blender-session-controls",
+      "blender-export-and-validate-kit"
     ],
     "data": {
       "reads": [
-        "scene: The open .blend session inside the running Blender, reached only through the add-on socket.",
-        "asset_libraries: Poly Haven, Sketchfab and Poly Pizza, reached through `blender_search_assets` and `blender_import_asset`; availability per user comes from `blender_get_addon_status`.",
-        "renders: Images returned by `blender_look` (kept in the conversation) and the in-session `Render Result` image."
+        "scene",
+        "asset_libraries",
+        "renders"
       ],
       "writes": [
-        "scene: The open .blend session inside the running Blender, reached only through the add-on socket."
+        "scene"
       ]
     },
     "guardrails": {
@@ -87,7 +88,8 @@
     "blender-review-viewport",
     "blender-assets",
     "blender-generative-3d",
-    "blender-session-controls"
+    "blender-session-controls",
+    "blender-export-and-validate-kit"
   ],
   "tools": [
     "blender_get_addon_status",

@@ -1,7 +1,7 @@
-"""CONN-BLENDER-CONNECTOR-R007: a drifted upstream reports ``drifted``.
+"""CONN-BLENDER-CONNECTOR-R007: a drifted upstream reports ``Degraded``.
 
 The declaration pins ``expected_fingerprint``; a listing whose tools do
-not match the pin reports the namespace ``drifted`` under the
+not match the pin reports the namespace ``Degraded`` under the
 ``on_drift: warn`` policy, while the rest of the server keeps serving.
 """
 
@@ -59,7 +59,7 @@ def test_drifted_upstream_reports_drifted(
                     await client.call_tool("registry_status", {})
                 ).structured_content["result"]
             }
-            assert status["blender"]["state"] == "drifted"
+            assert status["blender"]["state"] == "Degraded"
             # The connector surface stays up alongside the drifted upstream.
             tools = {tool.name for tool in await client.list_tools()}
             assert "handshake" in tools

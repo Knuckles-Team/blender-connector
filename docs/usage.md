@@ -39,5 +39,5 @@ refusal code.
 - `execute_blender_code` runs arbitrary Python inside Blender — inherent
   to the upstream; the connector re-gates nothing and adds no second
   Blender access path.
-- A drifted upstream (tool list changed vs. the pin) reports `drifted`
+- A drifted upstream (tool list changed vs. the pin) reports `Degraded`
   under `on_drift=warn`; switch the declaration to `refuse` to hard-stop.

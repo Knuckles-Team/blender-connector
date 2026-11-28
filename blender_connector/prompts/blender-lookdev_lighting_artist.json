@@ -25,7 +25,8 @@
     ]
   },
   "agent": {
-    "kind": "role",
+    "kind": "business-role",
+    "business_role": "lookdev_lighting_artist",
     "tools": [
       "blender_execute_blender_code",
       "blender_look",
@@ -39,11 +40,11 @@
     ],
     "data": {
       "reads": [
-        "scene: The open .blend session inside the running Blender, reached only through the add-on socket.",
-        "renders: Images returned by `blender_look` (kept in the conversation) and the in-session `Render Result` image."
+        "scene",
+        "renders"
       ],
       "writes": [
-        "scene: The open .blend session inside the running Blender, reached only through the add-on socket."
+        "scene"
       ]
     },
     "guardrails": {

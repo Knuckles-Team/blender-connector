@@ -1,6 +1,6 @@
 """CONN-BLENDER-CONNECTOR-R004: an absent upstream degrades, the server stays up.
 
-A binary missing from the PATH marks the upstream ``unavailable`` with
+A binary missing from the PATH marks the upstream ``Backoff`` with
 the SDK's refusal code; the registry tools, the native tool and the
 content keep serving.
 """
@@ -68,7 +68,7 @@ def test_missing_binary_marks_upstream_unavailable(
                     await client.call_tool("registry_status", {})
                 ).structured_content["result"]
             }
-            assert status["blender"]["state"] == "unavailable"
+            assert status["blender"]["state"] == "Backoff"
             assert status["blender"]["last_error_code"] == UPSTREAM_SPAWN_FAILED
             # The readiness probe still answers and reports the gap.
             handshake = await client.call_tool("handshake", {})

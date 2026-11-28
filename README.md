@@ -36,7 +36,7 @@ The upstream talks to a running Blender through an add-on socket (default `local
 ## Key Features
 
 - **Wraps, does not reimplement:** the upstream is a pooled stdio child namespaced `blender`; every upstream tool is served as `blender_<tool>` with the `scion/upstream` metadata, and upstream resources pass through unmodified.
-- **Complete surface:** nine functionality skills plus a router skill, one prompt per functionality plus an operator and three role prompts (scene builder, look-dev and lighting artist, technical animator), and an ontology of tool-use contracts and data locations.
+- **Complete surface:** ten functionality skills plus a router skill, one prompt per functionality plus an operator and three role prompts (scene builder, look-dev and lighting artist, technical animator), and an ontology of tool-use contracts and data locations.
 - **Safe by default:** safe mode (`BLENDER_MCP_SAFE_MODE=1`) and the telemetry opt-out are shipped in the example client entry, and the child gets a clean environment.
 - **Readiness without Blender:** the connector-native `handshake` tool checks the upstream binary and the add-on socket without any Blender protocol traffic.
 - **Drift gates:** a committed tool snapshot, byte-checked generated content and a live drift check against the upstream.
@@ -106,6 +106,18 @@ blender-connector --transport streamable-http --host 0.0.0.0 --port 8000
 ```
 
 The Blender add-on socket has no authentication: keep it on the same host or pod as the connector, never on an untrusted network.
+
+---
+
+## Security: the add-on socket
+
+The Blender add-on server takes commands on its port with no authentication, and `blender_execute_blender_code` runs any Python in the Blender session. Whoever reaches the socket controls the session and everything the Blender user can read. So:
+
+- The socket must listen on the loopback address only (`BLENDER_HOST` stays `localhost` or `127.0.0.1`).
+- The connector must run on the same host as Blender; it never opens a second socket to Blender.
+- No gateway, port forward or container port mapping may expose the socket.
+- Blender should run as a dedicated user with no access to credentials.
+- Callers reach the connector only through Arbora `fleet.call`, which applies admission and scopes.
 
 ---
 

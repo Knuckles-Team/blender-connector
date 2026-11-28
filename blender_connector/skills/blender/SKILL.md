@@ -29,6 +29,7 @@ Blender 3D scene work through the mcp-for-blender upstream - inspect the scene, 
 - Call the connector's `handshake` tool first: `ready: true` means the add-on socket answers. `ready: false` means Blender is not running, the add-on is off, or the host and port do not match.
 - Save the .blend file before any `blender_execute_blender_code` call: that tool runs arbitrary Python inside the live session.
 - The connector never opens its own socket to Blender; every scene action goes through a `blender_*` tool.
+- Security: the add-on socket has no authentication and `blender_execute_blender_code` runs any Python in the session, so the socket must listen on the loopback address only, the connector must run on the same host as Blender, no gateway, port forward or container port mapping may expose the socket, Blender should run as a dedicated user with no access to credentials, and callers reach the connector only through Arbora `fleet.call`, which applies admission and scopes.
 
 ## Activation
 
@@ -53,7 +54,7 @@ The `blender` namespace is active by default: the `blender_*` tools are visible 
 ## Steps
 
 1. Check the connector with `handshake` and verify the reply says `ready: true`.
-2. Confirm the namespace with `registry_status` and verify the `blender` upstream is not `unavailable`.
+2. Confirm the namespace with `registry_status` and verify the `blender` upstream is not `Backoff`.
 3. Pick the `blender-<functionality>` skill that matches the request from the table below and verify its name starts with `blender-`.
 4. Read before you change with `blender_get_scene_info` and verify the reply lists the objects the request names.
 5. Run the chosen skill's `blender_*` tool calls in order and verify each one against its own verify line before the next.
@@ -71,6 +72,7 @@ The `blender` namespace is active by default: the `blender_*` tools are visible 
 | `blender-assets` | Search and import library assets into the scene. |
 | `blender-generative-3d` | Generate 3D content from text or images; these operations may cost credits. |
 | `blender-session-controls` | Session maintenance: telemetry opt-out and trajectory feedback. |
+| `blender-export-and-validate-kit` | Build one asset-kit family in the live session from its kit script, export it as GLB, and report its triangle counts, LOD nodes and sockets. |
 
 ## Where the data lives
 
@@ -84,7 +86,7 @@ The `blender` namespace is active by default: the `blender_*` tools are visible 
 | Failure | Cause | Recovery |
 |---|---|---|
 | `handshake` returns `ready: false`, or a `blender_*` call times out | Blender is not running, the add-on server is stopped, or the host and port do not match the running instance | Start Blender, open the 3D viewport sidebar (N), tab `MCP for Blender`, press `Start MCP Server`; then re-run `handshake` and confirm the port equals `BLENDER_PORT`. |
-| `registry_status` shows the `blender` upstream `unavailable` with `UPSTREAM_SPAWN_FAILED` | The `mcp-for-blender` binary is not on the connector's PATH | Install it with `uv tool install mcp-for-blender` on the connector host, then call `registry_status` again. `handshake` reports `command_found`. |
+| `registry_status` shows the `blender` upstream `Backoff` with `UPSTREAM_SPAWN_FAILED` | The `mcp-for-blender` binary is not on the connector's PATH | Install it with `uv tool install mcp-for-blender` on the connector host, then call `registry_status` again. `handshake` reports `command_found`. |
 | No `blender_*` tools are listed | The `blender` namespace was deactivated or lazy activation is on | Call `registry_activate` with the namespace `blender`, then list tools again. |
 | `blender_get_addon_status` says the add-on is outdated | The installed add-on does not match the server version | Run `uvx mcp-for-blender install-addon` on the Blender host, then restart Blender or re-enable the add-on, and call `blender_get_addon_status` again. |
 | A script is blocked with a reason | Safe mode (`BLENDER_MCP_SAFE_MODE=1`) refused file, process, network or persistence access | Rewrite the script without the blocked call (use Blender operators and `bpy.data` instead of direct file or process access) and run it again. Report the refusal; never switch safe mode off to get past it. |
