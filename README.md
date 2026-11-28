@@ -36,7 +36,7 @@ The upstream talks to a running Blender through an add-on socket (default `local
 ## Key Features
 
 - **Wraps, does not reimplement:** the upstream is a pooled stdio child namespaced `blender`; every upstream tool is served as `blender_<tool>` with the `scion/upstream` metadata, and upstream resources pass through unmodified.
-- **Complete surface:** nine functionality skills plus a router skill, one prompt per functionality plus an operator and three role prompts (scene builder, look-dev and lighting artist, technical animator), and an ontology of tool-use contracts and data locations.
+- **Complete surface:** ten functionality skills plus a router skill, one prompt per functionality plus an operator and three role prompts (scene builder, look-dev and lighting artist, technical animator), and an ontology of tool-use contracts and data locations.
 - **Safe by default:** safe mode (`BLENDER_MCP_SAFE_MODE=1`) and the telemetry opt-out are shipped in the example client entry, and the child gets a clean environment.
 - **Readiness without Blender:** the connector-native `handshake` tool checks the upstream binary and the add-on socket without any Blender protocol traffic.
 - **Drift gates:** a committed tool snapshot, byte-checked generated content and a live drift check against the upstream.
