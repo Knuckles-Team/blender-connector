@@ -64,10 +64,10 @@ recovery:
 
 classes:
   - name: BlenderFile
-    parent: Document
+    parent: CreativeWork
     description: "A .blend scene file."
   - name: Scene
-    parent: Document
+    parent: CreativeWork
     description: "A Blender scene: objects, cameras, lights and world."
   - name: Object
     parent: Artifact
